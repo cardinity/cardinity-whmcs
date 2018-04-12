@@ -3,9 +3,9 @@
 This module will enable Cardinity payments in your WHMCS shop.
 
 ## Requirements
-* [Cardinity account](http://www.cardinity.com)
+* [Cardinity account](https://cardinity.com)
 * WHMCS v7.4.2 or above
-* [Composer](https://getcomposer.org/)
+* [Composer](https://getcomposer.org)
 
 ## Installation
 1. Download the latest release
