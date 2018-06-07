@@ -1,3 +1,5 @@
 .idea/
+.vscode/
 /modules/gateways/cardinity/vendor
 /modules/gateways/cardinity/composer.lock
+
