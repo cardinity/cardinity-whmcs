@@ -105,6 +105,7 @@ try {
             $invoiceId,
             $transactionId,
             $result->getAmount(),
+            0, // Payment Fee
             $gatewayModuleName
         );
     }

@@ -174,7 +174,7 @@ function cardinity_capture($params)
         $htmlOutput .= '<input type="hidden" name="PaReq" value="' . $pareq . '" />';
         $htmlOutput .= '<input type="hidden" name="TermUrl" value="' . $termurl . '"/>';
         $htmlOutput .= '<input type="hidden" name="MD" value="' . $md . '"/>';
-        $htmlOutput .= '<input type="submit" value="Submit" />';
+        $htmlOutput .= '<input type="submit" value="Submit" style="visibility:hidden;"/>';
         $htmlOutput .= '</form>';
         $htmlOutput .= '<script type="text/javascript">document.getElementById("3dsecureform").submit();</script>';
 
