@@ -129,10 +129,29 @@ function cardinity_capture($params)
             'cvc' => $params['cccvv'],
             'holder' => $holder,
         ];
+
+        /*
+        * The actual credit card info form is handled by whmcs and is encoded
+        * Unable to get the brower info variables from there.  
+        */
+
+        $threeds2_data = [
+            "notification_url" => $params['systemurl'] . 'modules/gateways/callback/cardinity.php', 
+            "browser_info" => [
+                "accept_header" => "text/html",
+                "browser_language" => "en-US",
+                "screen_width" => 1920,
+                "screen_height" => 1040,
+                'challenge_window_size' => "full-screen",
+                "user_agent" => $_SERVER['HTTP_USER_AGENT'],
+                "color_depth" => 24,
+                "time_zone" => -60
+            ],
+        ];
     }
 
-    //Create cardinity API payment method
-    $method = new Payment\Create([
+    //prepare parameters
+    $paymentParameters = [
         'amount' => $amount,
         'currency' => $params['currency'],
         'settle' => true,
@@ -141,7 +160,15 @@ function cardinity_capture($params)
         'country' => $params['clientdetails']['countrycode'],
         'payment_method' => $paymentMethod,
         'payment_instrument' => $paymentInstrument,
-    ]);
+    ];
+
+    //if available add 3ds2 data
+    if(isset($threeds2_data)){
+        $paymentParameters['threeds2_data'] = $threeds2_data;
+    }
+
+    //Create cardinity API payment method
+    $method = new Payment\Create($paymentParameters);
 
     //Get result from cardinity API
     try {
@@ -164,22 +191,57 @@ function cardinity_capture($params)
 
         //return WHMCS responce
         return createWhmcsReturnArray('success', $result, $result->getId());
-    } else if ($status == 'pending') { //3D secure authorization pending
-        $url = $result->getAuthorizationInformation()->getUrl();
-        $pareq = $result->getAuthorizationInformation()->getData();
-        $termurl = $params['systemurl'] . 'modules/gateways/callback/cardinity.php';
-        $md = $params['invoiceid'] . ',' . $result->getId();
+    } else if ($status == 'pending') {
 
-        $htmlOutput = '<form id="3dsecureform" method="post" action="' . $url . '">';
-        $htmlOutput .= '<input type="hidden" name="PaReq" value="' . $pareq . '" />';
-        $htmlOutput .= '<input type="hidden" name="TermUrl" value="' . $termurl . '"/>';
-        $htmlOutput .= '<input type="hidden" name="MD" value="' . $md . '"/>';
-        $htmlOutput .= '<input type="submit" value="Submit" style="visibility:hidden;"/>';
-        $htmlOutput .= '</form>';
-        $htmlOutput .= '<script type="text/javascript">document.getElementById("3dsecureform").submit();</script>';
+        if ($result->isThreedsV2()) {
+            //3D secure v2 authorization pending
+            $acs_url = $result->getThreeds2data()->getAcsUrl();
+            $creq = $result->getThreeds2data()->getCreq();
+            $threeDSSessionData = $params['invoiceid'] . ',' . $result->getId();
 
-        echo $htmlOutput;
-    } else { //Should never happen
+            $htmlOutput = "<div style='text-align: center; width: 300px; position: fixed; top: 30%; left: 50%; margin-top: -50px; margin-left: -150px; '>";
+            $htmlOutput .= '<h2>You will be redirected for 3ds verification shortly. </h2>';
+            $htmlOutput .= '<p>If browser does not redirect after 5 seconds, press Submit</p>';
+            $htmlOutput .= '<form id="3dsecureform" method="post" action="' . $acs_url . '">';
+            $htmlOutput .= '<input type="hidden" name="creq" value="' . $creq . '" />';
+            $htmlOutput .= '<input type="hidden" name="threeDSSessionData" value="' . $threeDSSessionData . '"/>';
+            $htmlOutput .= '<input type="submit" value="Submit" />';
+            $htmlOutput .= '</form>';
+            $htmlOutput .= '<script type="text/javascript">setTimeout(function() { document.getElementById("3dsecureform").submit(); }, 5000);</script>';
+            $htmlOutput .= '</div>';
+
+            echo $htmlOutput;
+
+            //we dont want to do anything else. just show html form and redirect
+            exit();
+        } else {
+            //3D secure authorization pending
+            $url = $result->getAuthorizationInformation()->getUrl();
+            $pareq = $result->getAuthorizationInformation()->getData();
+            $termurl = $params['systemurl'] . 'modules/gateways/callback/cardinity.php';
+            $md = $params['invoiceid'] . ',' . $result->getId();
+
+            $htmlOutput = "<div style='text-align: center; width:300px; position: fixed; top: 30%; left: 50%; margin-top: -50px; margin-left: -150px;'>";
+            $htmlOutput .= '<h2>You will be redirected for 3ds verification shortly. </h2>';
+            $htmlOutput .= '<p>If browser does not redirect after 5 seconds, press Submit</p>';
+            $htmlOutput .= '<form id="3dsecureform" method="post" action="' . $url . '">';
+            $htmlOutput .= '<input type="hidden" name="PaReq" value="' . $pareq . '" />';
+            $htmlOutput .= '<input type="hidden" name="TermUrl" value="' . $termurl . '"/>';
+            $htmlOutput .= '<input type="hidden" name="MD" value="' . $md . '"/>';
+            $htmlOutput .= '<input type="submit" value="Submit" />';
+            $htmlOutput .= '</form>';
+            $htmlOutput .= '<script type="text/javascript">setTimeout(function() { document.getElementById("3dsecureform").submit(); }, 5000);</script>';
+            $htmlOutput .= '</div>';
+
+            echo $htmlOutput;
+            //we dont want to do anything else. just show html form and redirect
+            exit();
+        }
+     
+        
+       
+    } else { 
+        //Should never happen
         return createWhmcsReturnArray('error', $result, $result->getId());
     }
 }

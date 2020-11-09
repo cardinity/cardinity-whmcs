@@ -29,13 +29,28 @@ if (!$gatewayParams['type']) {
     die("Module Not Activated");
 }
 
-$pares = $_POST['PaRes'];
 
-// MD parameter contains invoice ID and cardinity transaction ID, separated by comma
-$params = explode(',', $_POST['MD']);
+$isV2 = false;
 
-$invoiceId = $params[0];
-$transactionId = $params[1];
+if(isset($_POST['PaRes'])){
+    //if its 3ds v1 Pares is our fianlize data, and MD is invoiceID
+    $finalizeData = $_POST['PaRes'];
+
+    // MD parameter contains invoice ID and cardinity transaction ID, separated by comma
+    $params = explode(',', $_POST['MD']);
+    $invoiceId = $params[0];
+    $transactionId = $params[1];
+}elseif(isset($_POST['cres'])){
+    //If its 3dsV2 cres is our finalize data and threeDSSessionData contains invoiceID
+    $finalizeData = $_POST['cres'];
+
+    // threeDSSessionData parameter contains invoice ID and cardinity transaction ID, separated by comma
+    $params = explode(',', $_POST['threeDSSessionData']);
+    $invoiceId = $params[0];
+    $transactionId = $params[1];
+
+    $isV2 = true;
+}
 
 /**
  * Validate Callback Invoice ID.
@@ -81,7 +96,8 @@ $client = Client::create([
 ]);
 
 //Create Cardinity finalize method
-$method = new Cardinity\Method\Payment\Finalize($transactionId, $pares);
+
+$method = new Cardinity\Method\Payment\Finalize($transactionId, $finalizeData, $isV2);
 
 $isVerificationSuccessful = false; //Will be returned on redirect to invoice, indicates if payment is successful
 
@@ -94,6 +110,7 @@ try {
 
     if ($status == 'approved') { //3D secure verification approved
 
+        
         $isVerificationSuccessful = true;
         logTransaction($gatewayParams['name'], ['Invoice ID' => $invoiceId], 'Success');
 
