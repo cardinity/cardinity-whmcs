@@ -5,6 +5,9 @@
 
 // Require libraries needed for gateway module functions.
 require_once __DIR__ . '/../../../init.php';
+require_once __DIR__ . '/../../../includes/gatewayfunctions.php';
+require_once __DIR__ . '/../../../includes/invoicefunctions.php';
+
 
 //Autoload Cardinity SDK
 require_once __DIR__ . '/../cardinity/vendor/autoload.php';
@@ -15,8 +18,8 @@ use \Cardinity\Method\Refund;
 use \Cardinity\Exception;
 use WHMCS\Database\Capsule;
 
-$whmcs->load_function('gateway');
-$whmcs->load_function('invoice');
+//$whmcs->load_function('gateway');
+//$whmcs->load_function('invoice');
 
 // Detect module name from filename.
 $gatewayModuleName = basename(__FILE__, '.php');
@@ -79,6 +82,7 @@ $invoiceId = checkCbInvoiceID($invoiceId, $gatewayParams['name']);
  */
 checkCbTransID($transactionId);
 
+
 //Select the api credentials by gateway mode
 $gatewayMode = $gatewayParams['gatewayMode'];
 if ($gatewayMode == 'Test') {
@@ -115,7 +119,7 @@ try {
         logTransaction($gatewayParams['name'], ['Invoice ID' => $invoiceId], 'Success');
 
         //Add a token of credit card for later use
-        addCreditCardToken($invoiceId, $result->getId());
+        //addCreditCardToken($invoiceId, $result->getId());
 
         //Add payment information to given invoice ID
         addInvoicePayment(
