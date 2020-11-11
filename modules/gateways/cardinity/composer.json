@@ -1,5 +1,12 @@
 {
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/cardinity/cardinity-sdk-php"
+        }
+    ],
     "require": {
-        "cardinity/cardinity-sdk-php": "~2.0"
+        "php": ">=7.2.5",
+        "cardinity/cardinity-sdk-php": "~3.0"
     }
 }
