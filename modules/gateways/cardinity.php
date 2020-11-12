@@ -48,13 +48,6 @@ function cardinity_config()
             'Value' => 'Cardinity',
         ),
    
-
-        'gatewayExternal' => array(
-            'FriendlyName' => 'Enable External Payment',
-            'Type' => 'radio',
-            'Options' => 'Yes,No',
-        ),
-
         'liveConsumerKey' => array(
             'FriendlyName' => 'Live Consumer Key',
             'Type' => 'text',
@@ -109,44 +102,6 @@ function cardinity_config()
     );
 }
 
-
-
-// Detect module name from filename.
-$gatewayModuleName = basename(__FILE__, '.php');
-
-// Fetch gateway configuration parameters.
-$gatewayParams = getGatewayVariables($gatewayModuleName);
-
-//if external enabled define _link function
-if($gatewayParams['gatewayExternal'] == "Yes"){
-    /**
-     * Redirect to payment HOST
-     *
-     * @param array $params Payment gateway module parameters
-     * @return void
-     */
-    function cardinity_link($params){
-        
-        processExternalPayment($params);
-    }
-}else{    
-    // else define _capture
-    /**
-     * Capture payment
-     *
-     * @param array $params Payment gateway module parameters
-     * @return void
-     */
-    function cardinity_capture($params)
-    {
-        
-        processInternalPayment($params);
-    }
-}   
-
-
-
-
 /**
  * Refund transaction
  *
@@ -184,78 +139,9 @@ function cardinity_refund($params)
     }
 }
 
-function processExternalPayment($params){
-       
-    //Create Cardinity client
-    $client = createCardinityClient($params);
-    //Cardinity API accepts order id with minimum length of 2.
-    $orderId = str_pad($params['invoiceid'], 2, '0', STR_PAD_LEFT);
-
-    //Cardinity API accepts payment amount as float value to 2 decimal places
-    $amount = number_format((float)$params['amount'], 2, '.', '') ;
-
-    $cancelUrl = $params['systemurl'] . 'modules/gateways/callback/cardinity.php';
-    $returnUrl = $params['systemurl'] . 'modules/gateways/callback/cardinity.php';
-
-
-    $attributes = [
-        "amount" => $amount,
-        "currency" => $params['currency'],
-        "country" => $params['clientdetails']['countrycode'],
-        "order_id" => $orderId,
-        "description" => "$params[invoiceid]",
-        "project_id" => $params['projectId'],
-        "cancel_url" => $cancelUrl,
-        "return_url" => $returnUrl,
-    ];
-
-    ksort($attributes);
-
-    $message = '';
-    foreach($attributes as $key => $value) {
-        $message .= $key.$value;
-    }
-
-    $signature = hash_hmac('sha256', $message, $params['projectSecret']);
-
-    
-    //Build the external request form
-    $requestForm = '<html>
-        <head>
-            <title>Request Example | Hosted Payment Page</title>
-            <script type="text/javascript">setTimeout(function() { document.getElementById("externalPaymentForm").submit(); }, 5000);</script>
-        </head>
-        <body>
-            <div style="text-align: center; width: 300px; position: fixed; top: 30%; left: 50%; margin-top: -50px; margin-left: -150px;">
-                <h2>You will be redirected to external gateway shortly. </h2>
-                <p>If browser does not redirect after 5 seconds, press Submit</p>
-                <form id="externalPaymentForm" name="checkout" method="POST" action="https://checkout.cardinity.com">                    
-                    <button type=submit>Click Here</button>
-                    <input type="hidden" name="amount" value="' . $attributes['amount'] . '" />
-                    <input type="hidden" name="cancel_url" value="' . $attributes['cancel_url'] . '" />
-                    <input type="hidden" name="country" value="' . $attributes['country'] . '" />
-                    <input type="hidden" name="currency" value="' . $attributes['currency'] . '" />
-                    <input type="hidden" name="description" value="' . $attributes['description'] . '" />
-                    <input type="hidden" name="order_id" value="' . $attributes['order_id'] . '" />
-                    <input type="hidden" name="project_id" value="' . $attributes['project_id'] . '" />
-                    <input type="hidden" name="return_url" value="' . $attributes['return_url'] . '" />
-                    <input type="hidden" name="signature" value="' . $signature . '" />
-                </form>
-            </div>
-        </body>
-        </html>';
-
-    echo $requestForm;
-    //we dont want to do anything else. just show html form and redirect
-    exit();
-}
-
-/**
- * External payment disabled
- * Process internal payment
- * both 3ds and non 3ds
- */
+//rename / remove this function if using external
 function processInternalPayment($params){
+
     //Create Cardinity client
     $client = createCardinityClient($params);
     //Cardinity API accepts order id with minimum length of 2.
@@ -292,6 +178,13 @@ function processInternalPayment($params){
             'cvc' => $params['cccvv'],
             'holder' => $holder,
         ];
+
+        //echo "<pre>";
+        //print_r($_POST);
+        //echo "<Br/>";
+        //print_r($params);
+        //echo "</pre>";        
+        //exit();
 
         /*
         * The actual credit card info form is handled by whmcs and is encoded
@@ -369,7 +262,7 @@ function processInternalPayment($params){
                 </head>
                 <body>
                     <div style="text-align: center; width: 300px; position: fixed; top: 30%; left: 50%; margin-top: -50px; margin-left: -150px;">
-                        <h2>You will be redirected to external gateway shortly. </h2>
+                        <h2>You will be redirected for 3D secure verification shortly. </h2>
                         <p>If browser does not redirect after 5 seconds, press Submit</p>
                         <form id="3dsecureform" method="post" action="' . $acs_url . '">                   
                             <button type=submit>Click Here</button>
@@ -415,6 +308,84 @@ function processInternalPayment($params){
         return createWhmcsReturnArray('error', $result, $result->getId());
     }
 }
+
+//rename this to cardinity_link to use external payment
+function processExternalPayment($params){
+       
+    //Create Cardinity client
+    $client = createCardinityClient($params);
+    //Cardinity API accepts order id with minimum length of 2.
+    $orderId = str_pad($params['invoiceid'], 2, '0', STR_PAD_LEFT);
+
+    //Cardinity API accepts payment amount as float value to 2 decimal places
+    $amount = number_format((float)$params['amount'], 2, '.', '') ;
+
+    $cancelUrl = $params['systemurl'] . 'modules/gateways/callback/cardinity.php';
+    $returnUrl = $params['systemurl'] . 'modules/gateways/callback/cardinity.php';
+
+
+    $attributes = [
+        "amount" => $amount,
+        "currency" => $params['currency'],
+        "country" => $params['clientdetails']['countrycode'],
+        "order_id" => $orderId,
+        "description" => "$params[invoiceid]",
+        "project_id" => $params['projectId'],
+        "cancel_url" => $cancelUrl,
+        "return_url" => $returnUrl,
+    ];
+
+    ksort($attributes);
+
+    $message = '';
+    foreach($attributes as $key => $value) {
+        $message .= $key.$value;
+    }
+
+    $signature = hash_hmac('sha256', $message, $params['projectSecret']);
+
+    
+    //Build the external request form
+    $requestForm = '<html>
+        <head>
+            <title>Request Example | Hosted Payment Page</title>
+            <script type="text/javascript">setTimeout(function() { document.getElementById("externalPaymentForm").submit(); }, 5000);</script>
+        </head>
+        <body>
+            <div style="text-align: center; width: 300px; position: fixed; top: 30%; left: 50%; margin-top: -50px; margin-left: -150px;">
+                <h2>You will be redirected to external gateway shortly. </h2>
+                <p>If browser does not redirect after 5 seconds, press Submit</p>
+                <form id="externalPaymentForm" name="checkout" method="POST" action="https://checkout.cardinity.com">                    
+                    <button type=submit>Click Here</button>
+                    <input type="hidden" name="amount" value="' . $attributes['amount'] . '" />
+                    <input type="hidden" name="cancel_url" value="' . $attributes['cancel_url'] . '" />
+                    <input type="hidden" name="country" value="' . $attributes['country'] . '" />
+                    <input type="hidden" name="currency" value="' . $attributes['currency'] . '" />
+                    <input type="hidden" name="description" value="' . $attributes['description'] . '" />
+                    <input type="hidden" name="order_id" value="' . $attributes['order_id'] . '" />
+                    <input type="hidden" name="project_id" value="' . $attributes['project_id'] . '" />
+                    <input type="hidden" name="return_url" value="' . $attributes['return_url'] . '" />
+                    <input type="hidden" name="signature" value="' . $signature . '" />
+                </form>
+            </div>
+        </body>
+        </html>';
+
+    echo $requestForm;
+    //we dont want to do anything else. just show html form and redirect
+    exit();
+}
+
+
+
+/***
+ * Replace this function  for external
+ */
+function cardinity_capture($params){
+    return processInternalPayment($params);
+}
+
+
 
 /**
  * Create a cardinity client object
