@@ -18,6 +18,7 @@ if (!defined("WHMCS")) {
     die("This file cannot be accessed directly");
 }
 
+ 
 /**
  * Define gateway metadata
  *
@@ -64,7 +65,7 @@ function cardinity_config()
             'Description' => 'Enter live consumer secret here',
         ),
 
-        'projectId' => array(
+        /*'projectId' => array(
             'FriendlyName' => 'Cardinity Project ID',
             'Type' => 'text',
             'Size' => '100',
@@ -76,7 +77,7 @@ function cardinity_config()
             'Type' => 'text',
             'Size' => '100',
             'Default' => '',
-        ),
+        ),*/
 
         'gatewayMode' => array(
             'FriendlyName' => 'Gateway Mode',
@@ -179,12 +180,7 @@ function processInternalPayment($params){
             'holder' => $holder,
         ];
 
-        //echo "<pre>";
-        //print_r($_POST);
-        //echo "<Br/>";
-        //print_r($params);
-        //echo "</pre>";        
-        //exit();
+
 
         /*
         * The actual credit card info form is handled by whmcs and is encoded
@@ -310,7 +306,7 @@ function processInternalPayment($params){
 }
 
 //rename this to cardinity_link to use external payment
-function processExternalPayment($params){
+/*function processExternalPayment($params){
        
     //Create Cardinity client
     $client = createCardinityClient($params);
@@ -375,7 +371,7 @@ function processExternalPayment($params){
     //we dont want to do anything else. just show html form and redirect
     exit();
 }
-
+*/
 
 
 /***
@@ -449,3 +445,10 @@ function addRemoteToken($invoiceId, $remoteTokenID)
             "gatewayid" => $remoteTokenID
         ]);
 }
+
+
+GATEWAYNOTINSTALLED:
+echo "";
+
+
+  

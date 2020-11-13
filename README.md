@@ -15,13 +15,15 @@ This module will enable Cardinity payments in your WHMCS shop.
 5. Open WHMCS Admin area
 6. Navigate to  `Setup -> Payments -> Payment Gateways`
 7. Click the `All Payment Gateways` tab
-8. Click `Cardinity`
-9. Enter your API keys from Cardinity members area
+8. To install internal embedded payment gateway Click `Cardinity`
+9. To install external hosted payment gateway Click `Cardinity External` 
+10. Enter required details on the `Manage Existing Gateways` tab
 
 ## Installation above version 8
 * Follow Steps 1 - 5 as above
 6. Navigate to "Wrench" on upper right corner `Configuration`  > `System Settings`
 7. Find `Payment Gateways`
 8. Click the `All Payment Gateways` tab
-9. Click `Cardinity`
-10. Enter required details on the `Manage Existing Gateways` tab
+9. To install internal embedded payment gateway Click `Cardinity`
+10. To install external hosted payment gateway Click `Cardinity External`
+11. Enter required details on the `Manage Existing Gateways` tab
