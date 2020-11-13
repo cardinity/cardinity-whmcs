@@ -18,7 +18,6 @@ if (!defined("WHMCS")) {
     die("This file cannot be accessed directly");
 }
 
- 
 /**
  * Define gateway metadata
  *
@@ -182,6 +181,9 @@ function processInternalPayment($params){
 
 
 
+        $browserInfoCookie = unserialize(base64_decode($_COOKIE['cardinity_browser_info']));
+
+       
         /*
         * The actual credit card info form is handled by whmcs and is encoded
         * Unable to get the brower info variables from there.  
@@ -190,15 +192,17 @@ function processInternalPayment($params){
             "notification_url" => $params['systemurl'] . 'modules/gateways/callback/cardinity.php', 
             "browser_info" => [
                 "accept_header" => "text/html",
-                "browser_language" => $userAgent[2],
-                "screen_width" => 1920,
-                "screen_height" => 1040,
-                'challenge_window_size' => "full-screen", 
+                "browser_language" => $browserInfoCookie['browser_language'] ?? 'en-US',
+                "screen_width" => (int) $browserInfoCookie['screen_width'] ?? 1920,
+                "screen_height" => (int) $browserInfoCookie['screen_height'] ?? 1040,
+                'challenge_window_size' => $browserInfoCookie['challenge_window_size'] ?? "full-screen", 
                 "user_agent" => $_SERVER['HTTP_USER_AGENT'],
-                "color_depth" => 24,
-                "time_zone" => -60
+                "color_depth" => (int) $browserInfoCookie['color_depth'] ?? 24,
+                "time_zone" => (int) $browserInfoCookie['time_zone'] ?? -60
             ],
         ];
+
+    
     }
 
     //prepare parameters
@@ -445,10 +449,6 @@ function addRemoteToken($invoiceId, $remoteTokenID)
             "gatewayid" => $remoteTokenID
         ]);
 }
-
-
-GATEWAYNOTINSTALLED:
-echo "";
 
 
   

@@ -1,14 +1,18 @@
 <?php
 
+
 add_hook('ClientAreaFooterOutput', 1, function($vars) {
     
+    //return "DID IT".print_r($vars['systemurl'], true);
     $browserInfo = "
-    <input type='hidden' form='frmCheckout' id='screen_width' name='browser_info[screen_width]' value='' />
-    <input type='hidden' form='frmCheckout' id='screen_height' name='browser_info[screen_height]' value='' />
-    <input type='hidden' form='frmCheckout' id='challenge_window_size' name='browser_info[challenge_window_size]' value='' />
-    <input type='hidden' form='frmCheckout' id='browser_language' name='browser_info[browser_language]' value='' />
-    <input type='hidden' form='frmCheckout' id='color_depth' name='browser_info[color_depth]' value='' />
-    <input type='hidden' form='frmCheckout' id='time_zone' name='browser_info[time_zone]' value='' />
+    <form>
+    <input type='hidden' class='crdBrowserInfo' form='frmCheckoutB' id='screen_width' name='browser_info[screen_width]' value='' />
+    <input type='hidden' class='crdBrowserInfo' form='frmCheckoutB' id='screen_height' name='browser_info[screen_height]' value='' />
+    <input type='hidden' class='crdBrowserInfo' form='frmCheckoutB' id='challenge_window_size' name='browser_info[challenge_window_size]' value='' />
+    <input type='hidden' class='crdBrowserInfo' form='frmCheckoutB' id='browser_language' name='browser_info[browser_language]' value='' />
+    <input type='hidden' class='crdBrowserInfo' form='frmCheckoutB' id='color_depth' name='browser_info[color_depth]' value='' />
+    <input type='hidden' class='crdBrowserInfo' form='frmCheckoutB' id='time_zone' name='browser_info[time_zone]' value='' />
+    </form>
 
     <script type='text/javascript'>
         document.addEventListener('DOMContentLoaded', function() {
@@ -44,12 +48,33 @@ add_hook('ClientAreaFooterOutput', 1, function($vars) {
                     }        
                 });
             }
+
+            saveBrowserInfo();
+
         });
+
+        function saveBrowserInfo()
+        {
+            var elements = document.getElementsByClassName('crdBrowserInfo');
+            var formData = new FormData(); 
+            for(var i=0; i<elements.length; i++)
+            {
+                formData.append(elements[i].name, elements[i].value);
+            }
+            var xmlHttp = new XMLHttpRequest();
+                xmlHttp.onreadystatechange = function()
+                {
+                    if(xmlHttp.readyState == 4 && xmlHttp.status == 200)
+                    {
+                        console.log('browser info sent');
+                    }
+                }
+                xmlHttp.open('post', '".$vars['systemurl'] . 'modules/gateways/callback/cardinitybrowserinfo.php'."'); 
+                xmlHttp.send(formData); 
+        }
     </script>   
     ";   
 
-    if($vars['action'] == "checkout"){
-        return $browserInfo;
-    }
+    return $browserInfo;
    
 });
