@@ -2,7 +2,6 @@
 
 add_hook('ClientAreaFooterOutput', 1, function($vars) {
     
-    return "footer hook". $vars['action'] ."<br/>";
     $browserInfo = "
     <input type='hidden' form='frmCheckout' id='screen_width' name='browser_info[screen_width]' value='' />
     <input type='hidden' form='frmCheckout' id='screen_height' name='browser_info[screen_height]' value='' />
