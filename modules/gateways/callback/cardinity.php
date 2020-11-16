@@ -49,178 +49,107 @@ $client = Client::create([
     'consumerSecret' => $consumer_secret,
 ]);
 
-
-
 /**
  * Chose Exeternal or Internal
  */
-if($gatewayParams['gatewayExternal'] == "Yes"){
-
-    $message = '';
-    ksort($_POST);
-
-    foreach ($_POST as $key => $value) {
-        if ($key == 'signature') continue;
-        $message .= $key . $value;
-    }
 
 
-    
-    //$transactionId = $_POST['id'];
+//is internal payment callback
+$isV2 = false;
 
-    $signature = hash_hmac('sha256', $message, $gatewayParams['projectSecret']);
+if (isset($_POST['PaRes'])) {
+    //if its 3ds v1 Pares is our fianlize data, and MD is invoiceID
+    $finalizeData = $_POST['PaRes'];
 
-    $invoiceId = $_POST['description'];
-    $transactionId = $_POST['id'];
+    // MD parameter contains invoice ID and cardinity transaction ID, separated by comma
+    $params = explode(',', $_POST['MD']);
+    $invoiceId = $params[0];
+    $transactionId = $params[1];
+} elseif (isset($_POST['cres'])) {
+    //If its 3dsV2 cres is our finalize data and threeDSSessionData contains invoiceID
+    $finalizeData = $_POST['cres'];
 
-    /**
-     * Validate Callback Invoice ID.
-     *
-     * Checks invoice ID is a valid invoice number. Note it will count an
-     * invoice in any status as valid.
-     *
-     * Performs a die upon encountering an invalid Invoice ID.
-     *
-     * Returns a normalised invoice ID.
-     *
-     * @param int $invoiceId Invoice ID
-     * @param string $gatewayName Gateway Name
-     */
-    $invoiceId = checkCbInvoiceID($invoiceId, $gatewayParams['name']);
+    // threeDSSessionData parameter contains invoice ID and cardinity transaction ID, separated by comma
+    $params = explode(',', $_POST['threeDSSessionData']);
+    $invoiceId = $params[0];
+    $transactionId = $params[1];
 
-     /**
-     * Check Callback Transaction ID.
-     *
-     * Performs a check for any existing transactions with the same given
-     * transaction number.
-     *
-     * Performs a die upon encountering a duplicate.
-     *
-     * @param string $transactionId Unique Transaction ID
-     */
-    checkCbTransID($transactionId);  
-       
-
-    //Verify response is not tampered
-    if ($signature == $_POST['signature']) {
-        // check if payment is approved
-        if ($_POST['status'] == "approved") {           
-            //Payment Accepted                    
-            $isVerificationSuccessful = true;
-            addInvoicePayment(
-                $invoiceId,
-                $transactionId,
-                $_POST['amount'],
-                0, // Payment Fee
-                $gatewayModuleName
-            );
-        }
-    } 
-
-    //Finished callback, redirect to whmcs
-    callback3DSecureRedirect($invoiceId, $isVerificationSuccessful);
-
-}else{
-  
-
-    //is internal payment callback
-    $isV2 = false;
-
-    if(isset($_POST['PaRes'])){
-        //if its 3ds v1 Pares is our fianlize data, and MD is invoiceID
-        $finalizeData = $_POST['PaRes'];
-    
-        // MD parameter contains invoice ID and cardinity transaction ID, separated by comma
-        $params = explode(',', $_POST['MD']);
-        $invoiceId = $params[0];
-        $transactionId = $params[1];
-    }elseif(isset($_POST['cres'])){
-        //If its 3dsV2 cres is our finalize data and threeDSSessionData contains invoiceID
-        $finalizeData = $_POST['cres'];
-    
-        // threeDSSessionData parameter contains invoice ID and cardinity transaction ID, separated by comma
-        $params = explode(',', $_POST['threeDSSessionData']);
-        $invoiceId = $params[0];
-        $transactionId = $params[1];
-    
-        $isV2 = true;
-    }
-    
-    /**
-     * Validate Callback Invoice ID.
-     *
-     * Checks invoice ID is a valid invoice number. Note it will count an
-     * invoice in any status as valid.
-     *
-     * Performs a die upon encountering an invalid Invoice ID.
-     *
-     * Returns a normalised invoice ID.
-     *
-     * @param int $invoiceId Invoice ID
-     * @param string $gatewayName Gateway Name
-     */
-    $invoiceId = checkCbInvoiceID($invoiceId, $gatewayParams['name']);
-    
-    /**
-     * Check Callback Transaction ID.
-     *
-     * Performs a check for any existing transactions with the same given
-     * transaction number.
-     *
-     * Performs a die upon encountering a duplicate.
-     *
-     * @param string $transactionId Unique Transaction ID
-     */
-    checkCbTransID($transactionId);
-    
-        
-    //Create Cardinity finalize method    
-    $method = new Cardinity\Method\Payment\Finalize($transactionId, $finalizeData, $isV2);    
-    $isVerificationSuccessful = false; //Will be returned on redirect to invoice, indicates if payment is successful
-    
-    try {
-        //Call Cardinity API
-        $result = $client->call($method);
-    
-        //Get payment status
-        $status = $result->getStatus();
-    
-        if ($status == 'approved') { //3D secure verification approved
-    
-            
-            $isVerificationSuccessful = true;
-            logTransaction($gatewayParams['name'], ['Invoice ID' => $invoiceId], 'Success');
-    
-            //Add a token of credit card for later use
-            addCreditCardToken($invoiceId, $result->getId());
-    
-            //Add payment information to given invoice ID
-            addInvoicePayment(
-                $invoiceId,
-                $transactionId,
-                $result->getAmount(),
-                0, // Payment Fee
-                $gatewayModuleName
-            );
-        }
-    } catch (Exception\Request $exception) {
-        $transactionInformation = array(
-            'Invoice ID' => $invoiceId,
-            'Error: ' => $exception->getErrorsAsString(),
-        );
-        logTransaction($gatewayParams['name'], $transactionInformation, 'Failure');
-    } catch (Exception\Runtime $exception) {
-        $transactionInformation = array(
-            'Invoice ID' => $invoiceId,
-            'Error: ' => $exception->getMessage(),
-        );
-        logTransaction($gatewayParams['name'], $transactionInformation, 'Failure');
-    }       
-
-    //Finished callback, redirect to whmcs
-    callback3DSecureRedirect($invoiceId, $isVerificationSuccessful);
+    $isV2 = true;
 }
 
+/**
+ * Validate Callback Invoice ID.
+ *
+ * Checks invoice ID is a valid invoice number. Note it will count an
+ * invoice in any status as valid.
+ *
+ * Performs a die upon encountering an invalid Invoice ID.
+ *
+ * Returns a normalised invoice ID.
+ *
+ * @param int $invoiceId Invoice ID
+ * @param string $gatewayName Gateway Name
+ */
+$invoiceId = checkCbInvoiceID($invoiceId, $gatewayParams['name']);
+
+/**
+ * Check Callback Transaction ID.
+ *
+ * Performs a check for any existing transactions with the same given
+ * transaction number.
+ *
+ * Performs a die upon encountering a duplicate.
+ *
+ * @param string $transactionId Unique Transaction ID
+ */
+checkCbTransID($transactionId);
+
+
+//Create Cardinity finalize method    
+$method = new Cardinity\Method\Payment\Finalize($transactionId, $finalizeData, $isV2);
+$isVerificationSuccessful = false; //Will be returned on redirect to invoice, indicates if payment is successful
+
+try {
+    //Call Cardinity API
+    $result = $client->call($method);
+
+    //Get payment status
+    $status = $result->getStatus();
+
+    if ($status == 'approved') { //3D secure verification approved
+
+
+        $isVerificationSuccessful = true;
+        logTransaction($gatewayParams['name'], ['Invoice ID' => $invoiceId], 'Success');
+
+        //Add a token of credit card for later use
+        addCreditCardToken($invoiceId, $result->getId());
+
+        //Add payment information to given invoice ID
+        addInvoicePayment(
+            $invoiceId,
+            $transactionId,
+            $result->getAmount(),
+            0, // Payment Fee
+            $gatewayModuleName
+        );
+    }
+} catch (Exception\Request $exception) {
+    $transactionInformation = array(
+        'Invoice ID' => $invoiceId,
+        'Error: ' => $exception->getErrorsAsString(),
+    );
+    logTransaction($gatewayParams['name'], $transactionInformation, 'Failure');
+} catch (Exception\Runtime $exception) {
+    $transactionInformation = array(
+        'Invoice ID' => $invoiceId,
+        'Error: ' => $exception->getMessage(),
+    );
+    logTransaction($gatewayParams['name'], $transactionInformation, 'Failure');
+}
+
+//Finished callback, redirect to whmcs
+callback3DSecureRedirect($invoiceId, $isVerificationSuccessful);
 
 
 
