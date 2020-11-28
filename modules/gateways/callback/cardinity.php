@@ -151,7 +151,7 @@ try {
          $htmlOutput .= '<input type="hidden" name="MD" value="' . $md . '"/>';
          $htmlOutput .= '<input type="submit" value="Submit" />';
          $htmlOutput .= '</form>';
-         $htmlOutput .= '<script type="text/javascript">setTimeout(function() { document.getElementById("3dsecureform").submit(); }, 50000);</script>';
+         $htmlOutput .= '<script type="text/javascript">setTimeout(function() { document.getElementById("3dsecureform").submit(); }, 5000);</script>';
          $htmlOutput .= '</div>';
 
          echo $htmlOutput;

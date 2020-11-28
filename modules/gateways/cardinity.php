@@ -272,7 +272,7 @@ function processInternalPayment($params){
             $requestForm = '<html>
                 <head>
                     <title>Request Example | Hosted Payment Page</title>
-                    <script type="text/javascript">setTimeout(function() { document.getElementById("3dsecureform").submit(); }, 50000);</script>
+                    <script type="text/javascript">setTimeout(function() { document.getElementById("3dsecureform").submit(); }, 5000);</script>
                 </head>
                 <body>
                     <div style="text-align: center; width: 300px; position: fixed; top: 30%; left: 50%; margin-top: -50px; margin-left: -150px;">
