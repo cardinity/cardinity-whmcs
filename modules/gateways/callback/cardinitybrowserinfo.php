@@ -1,10 +1,24 @@
 <?php
 
-
-//$_SESSION['cardinity_browser_info'] = $_POST['browser_info']['screen_width'];
-
 $name = 'cardinity_browser_info';
-$value = base64_encode(serialize($_POST['browser_info']));
+//$value = base64_encode(serialize($_POST['browser_info']));
+
+
+//stringify the parameters
+$browser_info_string = implode("",$_POST['browser_info']);
+$signature = hash_hmac('sha256', $browser_info_string, $_SERVER['HTTP_USER_AGENT']);
+
+//add signature to array
+$securedCookieArray = $_POST['browser_info'];
+$securedCookieArray['signature'] = $signature;
+
+//convert to json
+$securedCookieJson = base64_encode(json_encode($securedCookieArray));
+
+
+$value = $securedCookieJson;
+
+
 $expire = time() + 60 * 5;
 $path = ini_get('session.cookie_path');
 if ($path == null) {
@@ -16,6 +30,7 @@ if ($domain == null) {
 }
 $httponly = true;
 $secure = false;
+$samesite = 'None';
 
 
 if (PHP_VERSION_ID < 70300) {

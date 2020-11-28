@@ -180,9 +180,23 @@ function processInternalPayment($params){
         ];
 
 
+        //decode from json
+        $securedCookieArray = json_decode(base64_decode($_COOKIE['cardinity_browser_info']), true);
 
-        $browserInfoCookie = unserialize(base64_decode($_COOKIE['cardinity_browser_info']));
+        //pluck signature
+        $signatureGot = $securedCookieArray['signature'];
+        unset($securedCookieArray['signature']);
 
+        //generate new signature
+        $browser_info_string = implode("",$securedCookieArray);
+        $signature = hash_hmac('sha256', $browser_info_string, $_SERVER['HTTP_USER_AGENT']);
+
+        if($signature == $signatureGot){
+            //signature matched
+            $browserInfoCookie = $securedCookieArray;
+        }else{
+            $browserInfoCookie = array();
+        }
        
         /*
         * The actual credit card info form is handled by whmcs and is encoded
@@ -258,7 +272,7 @@ function processInternalPayment($params){
             $requestForm = '<html>
                 <head>
                     <title>Request Example | Hosted Payment Page</title>
-                    <script type="text/javascript">setTimeout(function() { document.getElementById("3dsecureform").submit(); }, 5000);</script>
+                    <script type="text/javascript">setTimeout(function() { document.getElementById("3dsecureform").submit(); }, 50000);</script>
                 </head>
                 <body>
                     <div style="text-align: center; width: 300px; position: fixed; top: 30%; left: 50%; margin-top: -50px; margin-left: -150px;">
