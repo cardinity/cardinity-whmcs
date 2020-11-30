@@ -133,6 +133,32 @@ try {
             0, // Payment Fee
             $gatewayModuleName
         );
+    }elseif($status == 'pending'){
+        //3dsv2 failed with pending, retry v1
+
+         //3D secure authorization pending
+         $url = $result->getAuthorizationInformation()->getUrl();
+         $pareq = $result->getAuthorizationInformation()->getData();
+         $termurl = $gatewayParams['systemurl'] . 'modules/gateways/callback/cardinity.php';
+         $md = $invoiceId. ',' . $result->getId();
+
+         $htmlOutput = "<div style='text-align: center; width:300px; position: fixed; top: 30%; left: 50%; margin-top: -50px; margin-left: -150px;'>";
+         $htmlOutput .= '<h2>You will be redirected for 3ds verification shortly. </h2>';
+         $htmlOutput .= '<p>If browser does not redirect after 5 seconds, press Submit</p>';
+         $htmlOutput .= '<form id="3dsecureform" method="post" action="' . $url . '">';
+         $htmlOutput .= '<input type="hidden" name="PaReq" value="' . $pareq . '" />';
+         $htmlOutput .= '<input type="hidden" name="TermUrl" value="' . $termurl . '"/>';
+         $htmlOutput .= '<input type="hidden" name="MD" value="' . $md . '"/>';
+         $htmlOutput .= '<input type="submit" value="Submit" />';
+         $htmlOutput .= '</form>';
+         $htmlOutput .= '<script type="text/javascript">setTimeout(function() { document.getElementById("3dsecureform").submit(); }, 5000);</script>';
+         $htmlOutput .= '</div>';
+
+         echo $htmlOutput;
+         //we dont want to do anything else. just show html form and redirect
+         exit();
+
+
     }
 } catch (Exception\Request $exception) {
     $transactionInformation = array(
