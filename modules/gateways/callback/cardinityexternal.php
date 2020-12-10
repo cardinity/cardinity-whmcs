@@ -9,6 +9,8 @@ require_once __DIR__ . '/../../../includes/gatewayfunctions.php';
 require_once __DIR__ . '/../../../includes/invoicefunctions.php';
 
 
+use WHMCS\Database\Capsule;
+
 // Detect module name from filename.
 $gatewayModuleName = basename(__FILE__, '.php');
 
@@ -66,15 +68,18 @@ $invoiceId = checkCbInvoiceID($invoiceId, $gatewayParams['name']);
  *
  * @param string $transactionId Unique Transaction ID
  */
-checkCbTransID($transactionId);  
-   
+checkCbTransID($transactionId);
+
 
 //Verify response is not tampered
 if ($signature == $_POST['signature']) {
     // check if payment is approved
-    if ($_POST['status'] == "approved") {           
-        //Payment Accepted                    
+    if ($_POST['status'] == "approved") {
+        //Payment Accepted
         $isVerificationSuccessful = true;
+
+        logTransaction($gatewayParams['name'], ['Invoice ID' => $invoiceId], 'Success');
+        
         addInvoicePayment(
             $invoiceId,
             $transactionId,
@@ -83,8 +88,7 @@ if ($signature == $_POST['signature']) {
             $gatewayModuleName
         );
     }
-} 
+}
 
 //Finished callback, redirect to whmcs
 callback3DSecureRedirect($invoiceId, $isVerificationSuccessful);
-

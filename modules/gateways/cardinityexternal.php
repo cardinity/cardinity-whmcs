@@ -6,6 +6,8 @@
 //autoload gateway functions
 require_once __DIR__ . '/../../includes/gatewayfunctions.php';
 
+use WHMCS\Database\Capsule;
+
 if (!defined("WHMCS")) {
     die("This file cannot be accessed directly");
 }
@@ -20,7 +22,7 @@ function cardinityexternal_MetaData()
     return array(
         'DisplayName' => 'Cardinity Hosted Payment',
         'APIVersion' => '1.1', // Use API Version 1.1
-        'DisableLocalCreditCardInput' => false,
+        'DisableLocalCreditCardInput' => true,
         'TokenisedStorage' => true,
     );
 }
@@ -38,8 +40,8 @@ function cardinityexternal_config()
         'FriendlyName' => array(
             'Type' => 'System',
             'Value' => 'Cardinity External',
-        ),   
-        
+        ),
+
         'projectId' => array(
             'FriendlyName' => 'Cardinity Project ID',
             'Type' => 'text',
@@ -53,7 +55,7 @@ function cardinityexternal_config()
             'Size' => '100',
             'Default' => '',
         ),
-      
+
     );
 }
 
@@ -61,7 +63,8 @@ function cardinityexternal_config()
 
 //rename this to cardinityexternal_link to use external payment
 function processExternalPayment($params){
-       
+
+
     //Cardinity API accepts order id with minimum length of 2.
     $orderId = str_pad($params['invoiceid'], 2, '0', STR_PAD_LEFT);
 
@@ -92,7 +95,7 @@ function processExternalPayment($params){
 
     $signature = hash_hmac('sha256', $message, $params['projectSecret']);
 
-    
+
     //Build the external request form
     $requestForm = '<html>
         <head>
@@ -103,7 +106,7 @@ function processExternalPayment($params){
             <div style="text-align: center; width: 300px; position: fixed; top: 30%; left: 50%; margin-top: -50px; margin-left: -150px;">
                 <h2>You will be redirected to external gateway shortly. </h2>
                 <p>If browser does not redirect after 5 seconds, press Submit</p>
-                <form id="externalPaymentForm" name="checkout" method="POST" action="https://checkout.cardinity.com">                    
+                <form id="externalPaymentForm" name="checkout" method="POST" action="https://checkout.cardinity.com">
                     <button type=submit>Click Here</button>
                     <input type="hidden" name="amount" value="' . $attributes['amount'] . '" />
                     <input type="hidden" name="cancel_url" value="' . $attributes['cancel_url'] . '" />
@@ -119,9 +122,23 @@ function processExternalPayment($params){
         </body>
         </html>';
 
-    echo $requestForm;
+        $requestForm2 = '
+                    <form id="externalPaymentForm" name="checkout" method="POST" action="https://checkout.cardinity.com">
+                        <button type=submit>Click Here</button>
+                        <input type="hidden" name="amount" value="' . $attributes['amount'] . '" />
+                        <input type="hidden" name="cancel_url" value="' . $attributes['cancel_url'] . '" />
+                        <input type="hidden" name="country" value="' . $attributes['country'] . '" />
+                        <input type="hidden" name="currency" value="' . $attributes['currency'] . '" />
+                        <input type="hidden" name="description" value="' . $attributes['description'] . '" />
+                        <input type="hidden" name="order_id" value="' . $attributes['order_id'] . '" />
+                        <input type="hidden" name="project_id" value="' . $attributes['project_id'] . '" />
+                        <input type="hidden" name="return_url" value="' . $attributes['return_url'] . '" />
+                        <input type="hidden" name="signature" value="' . $signature . '" />
+                    </form>';
+
+    return $requestForm2;
     //we dont want to do anything else. just show html form and redirect
-    exit();
+    //exit();
 }
 
 
@@ -132,6 +149,8 @@ function processExternalPayment($params){
 function cardinityexternal_link($params){
     return processExternalPayment($params);
 }
+
+
 
 
 
