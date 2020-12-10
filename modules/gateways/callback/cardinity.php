@@ -123,7 +123,7 @@ try {
         logTransaction($gatewayParams['name'], ['Invoice ID' => $invoiceId], 'Success');
 
         //Add a token of credit card for later use
-        //addCreditCardToken($invoiceId, $result->getId());
+        addCreditCardToken($invoiceId, $result->getId());
 
         //Add payment information to given invoice ID
         addInvoicePayment(
