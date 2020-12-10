@@ -3,17 +3,8 @@
  * Cardinity Gateway Module for WHMCS
  */
 
-//Autoload Cardinity SDK
-require_once "cardinity/vendor/autoload.php";
 //autoload gateway functions
 require_once __DIR__ . '/../../includes/gatewayfunctions.php';
-
-
-use Cardinity\Client;
-use Cardinity\Exception;
-use Cardinity\Method\Payment;
-use Cardinity\Method\Refund;
-use WHMCS\Database\Capsule;
 
 if (!defined("WHMCS")) {
     die("This file cannot be accessed directly");
@@ -47,24 +38,8 @@ function cardinityexternal_config()
         'FriendlyName' => array(
             'Type' => 'System',
             'Value' => 'Cardinity External',
-        ),
-   
-        'liveConsumerKey' => array(
-            'FriendlyName' => 'Live Consumer Key',
-            'Type' => 'text',
-            'Size' => '100',
-            'Default' => '',
-            'Description' => 'Enter live consumer key here',
-        ),
-
-        'liveConsumerSecret' => array(
-            'FriendlyName' => 'Live Consumer Secret',
-            'Type' => 'text',
-            'Size' => '100',
-            'Default' => '',
-            'Description' => 'Enter live consumer secret here',
-        ),
-
+        ),   
+        
         'projectId' => array(
             'FriendlyName' => 'Cardinity Project ID',
             'Type' => 'text',
@@ -78,66 +53,8 @@ function cardinityexternal_config()
             'Size' => '100',
             'Default' => '',
         ),
-
-        'gatewayMode' => array(
-            'FriendlyName' => 'Gateway Mode',
-            'Type' => 'radio',
-            'Options' => 'Test,Live',
-        ),
-
-        'testConsumerKey' => array(
-            'FriendlyName' => 'Test Consumer Key',
-            'Type' => 'text',
-            'Size' => '100',
-            'Default' => '',
-            'Description' => 'Enter test consumer key here',
-        ),
-
-        'testConsumerSecret' => array(
-            'FriendlyName' => 'Test Consumer Secret',
-            'Type' => 'text',
-            'Size' => '100',
-            'Default' => '',
-            'Description' => 'Enter test consumer secret here',
-        ),
+      
     );
-}
-
-/**
- * Refund transaction
- *
- * @param array $params Payment gateway module parameters
- * @return void
- */
-function cardinityexternal_refund($params)
-{
-    //Create Cardinity client
-    $client = createCardinityExternalClient($params);
-
-    $method = new Refund\Create(
-        $params['transid'],
-        floatval($params['amount'])
-    );
-
-    try {
-        $result = $client->call($method);
-    } catch (Exception\Unauthorized $exception) {
-        return createWhmcsReturnArrayExternal('error', 'Cardinity Gateway authentication error: Missing or invalid API keys');
-    } catch (Exception\Declined $exception) {
-        return createWhmcsReturnArrayExternal('declined', 'Error: ' . $exception->getErrorsAsString());
-    } catch (Exception\Request $exception) {
-        return createWhmcsReturnArrayExternal('error', 'Error: ' . $exception->getErrorsAsString());
-    } catch (Exception\Runtime $exception) {
-        return createWhmcsReturnArrayExternal('error', 'Error: ' . $exception->getMessage());
-    }
-
-    $status = $result->getStatus();
-
-    if ($status == 'approved') {
-        return createWhmcsReturnArrayExternal('success', $result, $result->getId());
-    } else {
-        return createWhmcsReturnArrayExternal('error', $result, $result->getId());
-    }
 }
 
 
@@ -145,8 +62,6 @@ function cardinityexternal_refund($params)
 //rename this to cardinityexternal_link to use external payment
 function processExternalPayment($params){
        
-    //Create Cardinity client
-    $client = createCardinityExternalClient($params);
     //Cardinity API accepts order id with minimum length of 2.
     $orderId = str_pad($params['invoiceid'], 2, '0', STR_PAD_LEFT);
 
@@ -219,32 +134,6 @@ function cardinityexternal_link($params){
 }
 
 
-
-/**
- * Create a cardinity client object
- *
- * @return Cardinity\Client cardinity client
- */
-function createCardinityExternalClient($params)
-{
-    //Select the api credentials by gateway mode
-    $gatewayMode = $params['gatewayMode'];
-    if ($gatewayMode == 'Test') {
-        $consumerKey = $params['testConsumerKey'];
-        $consumerSecret = $params['testConsumerSecret'];
-    } else {
-        $consumerKey = $params['liveConsumerKey'];
-        $consumerSecret = $params['liveConsumerSecret'];
-    }
-
-    //Create Cardinity Client
-    $client = Client::create([
-        'consumerKey' => $consumerKey,
-        'consumerSecret' => $consumerSecret,
-    ]);
-
-    return $client;
-}
 
 /**
  * Create an array that indicates the status of the payment
