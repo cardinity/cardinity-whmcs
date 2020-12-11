@@ -3,10 +3,13 @@
  * Cardinity Gateway Module for WHMCS
  */
 
-//Autoload Cardinity SDK
-require_once "cardinity/vendor/autoload.php";
+
 //autoload gateway functions
 require_once __DIR__ . '/../../includes/gatewayfunctions.php';
+
+//Autoload Cardinity SDK
+require_once __DIR__."/cardinity/vendor/autoload.php";
+
 
 use Cardinity\Client;
 use Cardinity\Exception;
@@ -64,20 +67,7 @@ function cardinity_config()
             'Description' => 'Enter live consumer secret here',
         ),
 
-        /*'projectId' => array(
-            'FriendlyName' => 'Cardinity Project ID',
-            'Type' => 'text',
-            'Size' => '100',
-            'Default' => '',
-        ),
-
-        'projectSecret' => array(
-            'FriendlyName' => 'Cardinity Project Secret',
-            'Type' => 'text',
-            'Size' => '100',
-            'Default' => '',
-        ),*/
-
+        
         'gatewayMode' => array(
             'FriendlyName' => 'Gateway Mode',
             'Type' => 'radio',

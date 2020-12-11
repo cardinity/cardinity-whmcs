@@ -8,5 +8,19 @@
     "require": {
         "php": ">=7.2.5",
         "cardinity/cardinity-sdk-php": "~3.0"
+    },
+    "autoload": {
+        "files": [
+            "vendor-static/guzzlehttp/guzzle/src/functions_include.php",
+            "vendor-static/guzzlehttp/psr7/src/functions_include.php",
+            "vendor-static/guzzlehttp/promises/src/functions_include.php",
+            "vendor-static/guzzlehttp/oauth-subscriber/src/Oauth1.php"
+        ],
+        "psr-4": {
+            "GuzzleHttp6\\": "vendor-static/guzzlehttp/guzzle/src/",
+            "GuzzleHttp6\\Psr7\\": "vendor-static/guzzlehttp/psr7/src/",
+            "GuzzleHttp6\\Promise\\": "vendor-static/guzzlehttp/promises/src/",
+            "GuzzleHttp6\\Subscriber\\Oauth\\": "vendor-static/guzzlehttp/oauth-subscriber/src/"
+        }
     }
 }

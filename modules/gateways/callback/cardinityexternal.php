@@ -9,17 +9,7 @@ require_once __DIR__ . '/../../../includes/gatewayfunctions.php';
 require_once __DIR__ . '/../../../includes/invoicefunctions.php';
 
 
-//Autoload Cardinity SDK
-require_once __DIR__ . '/../cardinity/vendor/autoload.php';
-
-use \Cardinity\Client;
-use \Cardinity\Method\Payment;
-use \Cardinity\Method\Refund;
-use \Cardinity\Exception;
 use WHMCS\Database\Capsule;
-
-//$whmcs->load_function('gateway');
-//$whmcs->load_function('invoice');
 
 // Detect module name from filename.
 $gatewayModuleName = basename(__FILE__, '.php');
@@ -31,25 +21,6 @@ $gatewayParams = getGatewayVariables($gatewayModuleName);
 if (!$gatewayParams['type']) {
     die("Module Not Activated");
 }
-
-
-//Select the api credentials by gateway mode
-$gatewayMode = $gatewayParams['gatewayMode'];
-if ($gatewayMode == 'Test') {
-    $consumer_key = $gatewayParams['testConsumerKey'];
-    $consumer_secret = $gatewayParams['testConsumerSecret'];
-} else {
-    $consumer_key = $gatewayParams['liveConsumerKey'];
-    $consumer_secret = $gatewayParams['liveConsumerSecret'];
-}
-
-//Create Cardinity Client
-$client = Client::create([
-    'consumerKey' => $consumer_key,
-    'consumerSecret' => $consumer_secret,
-]);
-
-
 
 
 /**
@@ -97,15 +68,18 @@ $invoiceId = checkCbInvoiceID($invoiceId, $gatewayParams['name']);
  *
  * @param string $transactionId Unique Transaction ID
  */
-checkCbTransID($transactionId);  
-   
+checkCbTransID($transactionId);
+
 
 //Verify response is not tampered
 if ($signature == $_POST['signature']) {
     // check if payment is approved
-    if ($_POST['status'] == "approved") {           
-        //Payment Accepted                    
+    if ($_POST['status'] == "approved") {
+        //Payment Accepted
         $isVerificationSuccessful = true;
+
+        logTransaction($gatewayParams['name'], ['Invoice ID' => $invoiceId], 'Success');
+        
         addInvoicePayment(
             $invoiceId,
             $transactionId,
@@ -114,8 +88,7 @@ if ($signature == $_POST['signature']) {
             $gatewayModuleName
         );
     }
-} 
+}
 
 //Finished callback, redirect to whmcs
 callback3DSecureRedirect($invoiceId, $isVerificationSuccessful);
-
