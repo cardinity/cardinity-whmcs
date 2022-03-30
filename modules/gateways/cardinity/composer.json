@@ -7,7 +7,7 @@
     ],
     "require": {
         "php": ">=7.2.5",
-        "cardinity/cardinity-sdk-php": "~3.0"
+        "cardinity/cardinity-sdk-php": "dev-master"
     },
     "autoload": {
         "files": [

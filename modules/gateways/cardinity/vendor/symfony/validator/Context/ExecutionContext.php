@@ -55,7 +55,7 @@ class ExecutionContext implements ExecutionContextInterface
     private $translator;
 
     /**
-     * @var string|null
+     * @var string
      */
     private $translationDomain;
 
@@ -111,27 +111,23 @@ class ExecutionContext implements ExecutionContextInterface
     /**
      * Stores which objects have been validated in which group.
      *
-     * @var bool[][]
+     * @var array
      */
     private $validatedObjects = [];
 
     /**
      * Stores which class constraint has been validated for which object.
      *
-     * @var bool[]
+     * @var array
      */
     private $validatedConstraints = [];
 
     /**
      * Stores which objects have been initialized.
      *
-     * @var bool[]
+     * @var array
      */
     private $initializedObjects;
-
-    /**
-     * @var \SplObjectStorage<object, string>
-     */
     private $cachedObjectsRefs;
 
     /**
@@ -157,7 +153,7 @@ class ExecutionContext implements ExecutionContextInterface
         $this->value = $value;
         $this->object = $object;
         $this->metadata = $metadata;
-        $this->propertyPath = $propertyPath;
+        $this->propertyPath = (string) $propertyPath;
     }
 
     /**
@@ -355,18 +351,17 @@ class ExecutionContext implements ExecutionContextInterface
 
     /**
      * @internal
+     *
+     * @param object $object
+     *
+     * @return string
      */
-    public function generateCacheKey(object $object): string
+    public function generateCacheKey($object)
     {
         if (!isset($this->cachedObjectsRefs[$object])) {
             $this->cachedObjectsRefs[$object] = spl_object_hash($object);
         }
 
         return $this->cachedObjectsRefs[$object];
-    }
-
-    public function __clone()
-    {
-        $this->violations = clone $this->violations;
     }
 }

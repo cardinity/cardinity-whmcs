@@ -5,7 +5,7 @@ namespace Cardinity\Http\Guzzle;
 use Cardinity\Method\Error;
 use Cardinity\Method\MethodInterface;
 use Cardinity\Method\ResultObjectMapperInterface;
-use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp6\Exception\ClientException;
 
 class ExceptionMapper
 {

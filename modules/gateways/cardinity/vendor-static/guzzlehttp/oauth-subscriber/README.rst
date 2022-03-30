@@ -31,9 +31,9 @@ REST API:
 
 .. code-block:: php
 
-    use GuzzleHttp6\Client;
-    use GuzzleHttp6\HandlerStack;
-    use GuzzleHttp6\Subscriber\Oauth\Oauth1;
+    use GuzzleHttp\Client;
+    use GuzzleHttp\HandlerStack;
+    use GuzzleHttp\Subscriber\Oauth\Oauth1;
 
     $stack = HandlerStack::create();
 
@@ -58,9 +58,9 @@ the client by extending the array you feed to ``new Client`` with auth => oauth.
 
 .. code-block:: php
 
-    use GuzzleHttp6\Client;
-    use GuzzleHttp6\HandlerStack;
-    use GuzzleHttp6\Subscriber\Oauth\Oauth1;
+    use GuzzleHttp\Client;
+    use GuzzleHttp\HandlerStack;
+    use GuzzleHttp\Subscriber\Oauth\Oauth1;
 
     $stack = HandlerStack::create();
 
@@ -90,7 +90,7 @@ Using the RSA-SH1 signature method
 
 .. code-block:: php
 
-    use GuzzleHttp6\Subscriber\Oauth\Oauth1;
+    use GuzzleHttp\Subscriber\Oauth\Oauth1;
 
     $stack = HandlerStack::create();
 

@@ -10,10 +10,7 @@ use PHPUnit\Framework\TestCase;
 
 class ClientTestCase extends TestCase
 {
-    /**
-     * @return void
-     */
-    public function setUp(): void
+    public function setUp() : void
     {
         $log = Client::LOG_NONE;
 
@@ -22,20 +19,14 @@ class ClientTestCase extends TestCase
         $this->assertInstanceOf('Cardinity\Client', $this->client);
     }
 
-    /**
-     * @return array
-     */
     protected function getConfig()
     {
         return [
-            'consumerKey' => $_ENV['CONSUMER_KEY'],
-            'consumerSecret' => $_ENV['CONSUMER_SECRET'],
+            'consumerKey' => CONSUMER_KEY,
+            'consumerSecret' => CONSUMER_SECRET,
         ];
     }
 
-    /**
-     * @return array
-     */
     protected function getPaymentParams()
     {
         return [
@@ -56,23 +47,6 @@ class ClientTestCase extends TestCase
         ];
     }
 
-    /**
-     * @param array optional
-     * @return array
-     */
-    public function get3ds2PaymentParams($browserData = [])
-    {
-        return array_merge(
-            $this->getPaymentParams(),
-            [
-                'threeds2_data' => $this->getThreeDS2Data($browserData)
-            ]
-        );
-    }
-
-    /**
-     * @return Payment\Payment
-     */
     public function getPayment()
     {
         $payment = new Payment\Payment();
@@ -84,10 +58,7 @@ class ClientTestCase extends TestCase
         return $payment;
     }
 
-    /**
-     * @param array optional
-     * @return array
-     */
+    
     public function getBrowserInfo($args = [])
     {
         $browserInfo = [
@@ -100,18 +71,18 @@ class ClientTestCase extends TestCase
             'color_depth' => 24,
             'time_zone' => -60,
         ];
-        if ($args) {
-            foreach($args as $key => $val) {
-                $browserInfo[$key] = $val;
-            }
+        if($args && isset($args['ip_address'])) {
+            $browserInfo['ip_address'] = $args['ip_address'];
+        }
+        if($args && isset($args['javascript_enabled'])) {
+            $browserInfo['javascript_enabled'] = $args['javascript_enabled'];
+        }
+        if($args && isset($args['java_enabled'])) {
+            $browserInfo['java_enabled'] = $args['java_enabled'];
         }
         return $browserInfo;
     }
 
-    /**
-     * @param array optional
-     * @return array
-     */
     public function getAddress($args = [])
     {
         $address = [
@@ -120,33 +91,28 @@ class ClientTestCase extends TestCase
             'country' => 'LT',
             'postal_code' => '0234'
         ];
-        if ($args && isset($args['address_line2'])) {
+        if($args && isset($args['address_line2'])) {
             $address['address_line2'] = $args['address_line2'];
         }
-        if ($args && isset($args['address_line3'])) {
+        if($args && isset($args['address_line3'])) {
             $address['address_line3'] = $args['address_line3'];
         }
-        if ($args && isset($args['state'])) {
+        if($args && isset($args['state'])) {
             $address['state'] = $args['state'];
         }
         return $address;
     }
 
-    /**
-     * @param array optional
-     * @return array
-     */
-    public function getThreeDS2Data($browserData = [])
+    public function getThreeDS2DataMandatoryData()
     {
-        return [
-            'notification_url' => 'https://notification.url/',
-            'browser_info' => $this->getBrowserInfo($browserData),
-        ];
+        $treeDS2Data['notification_url'] = 'https://notification.url/';
+
+        $browserInfo = $this->getBrowserInfo();
+        $treeDS2Data['browser_info'] = $browserInfo;
+
+        return $treeDS2Data;
     }
 
-    /**
-     * @return Payment\PaymentInstrumentCard
-     */
     public function getCard()
     {
         $card = new Payment\PaymentInstrumentCard();

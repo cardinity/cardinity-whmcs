@@ -41,28 +41,24 @@ class CountValidator extends ConstraintValidator
         $count = \count($value);
 
         if (null !== $constraint->max && $count > $constraint->max) {
-            $exactlyOptionEnabled = $constraint->min == $constraint->max;
-
-            $this->context->buildViolation($exactlyOptionEnabled ? $constraint->exactMessage : $constraint->maxMessage)
+            $this->context->buildViolation($constraint->min == $constraint->max ? $constraint->exactMessage : $constraint->maxMessage)
                 ->setParameter('{{ count }}', $count)
                 ->setParameter('{{ limit }}', $constraint->max)
                 ->setInvalidValue($value)
                 ->setPlural((int) $constraint->max)
-                ->setCode($exactlyOptionEnabled ? Count::NOT_EQUAL_COUNT_ERROR : Count::TOO_MANY_ERROR)
+                ->setCode(Count::TOO_MANY_ERROR)
                 ->addViolation();
 
             return;
         }
 
         if (null !== $constraint->min && $count < $constraint->min) {
-            $exactlyOptionEnabled = $constraint->min == $constraint->max;
-
-            $this->context->buildViolation($exactlyOptionEnabled ? $constraint->exactMessage : $constraint->minMessage)
+            $this->context->buildViolation($constraint->min == $constraint->max ? $constraint->exactMessage : $constraint->minMessage)
                 ->setParameter('{{ count }}', $count)
                 ->setParameter('{{ limit }}', $constraint->min)
                 ->setInvalidValue($value)
                 ->setPlural((int) $constraint->min)
-                ->setCode($exactlyOptionEnabled ? Count::NOT_EQUAL_COUNT_ERROR : Count::TOO_FEW_ERROR)
+                ->setCode(Count::TOO_FEW_ERROR)
                 ->addViolation();
 
             return;

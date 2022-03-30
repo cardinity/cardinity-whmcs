@@ -29,7 +29,7 @@ interface ExecutionContextFactoryInterface
      * @param mixed $root The root value of the validated
      *                    object graph
      *
-     * @return ExecutionContextInterface
+     * @return ExecutionContextInterface The new execution context
      */
     public function createContext(ValidatorInterface $validator, $root);
 }

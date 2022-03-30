@@ -13,13 +13,10 @@ namespace Symfony\Component\Validator;
 
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Annotations\CachedReader;
-use Doctrine\Common\Annotations\PsrCachedReader;
 use Doctrine\Common\Annotations\Reader;
 use Doctrine\Common\Cache\ArrayCache;
 use Psr\Cache\CacheItemPoolInterface;
-use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Validator\Context\ExecutionContextFactory;
-use Symfony\Component\Validator\Exception\LogicException;
 use Symfony\Component\Validator\Exception\ValidatorException;
 use Symfony\Component\Validator\Mapping\Factory\LazyLoadingMetadataFactory;
 use Symfony\Component\Validator\Mapping\Factory\MetadataFactoryInterface;
@@ -113,7 +110,7 @@ class ValidatorBuilder
      *
      * @return $this
      */
-    public function addXmlMapping(string $path)
+    public function addXmlMapping($path)
     {
         if (null !== $this->metadataFactory) {
             throw new ValidatorException('You cannot add custom mappings after setting a custom metadata factory. Configure your metadata factory instead.');
@@ -149,7 +146,7 @@ class ValidatorBuilder
      *
      * @return $this
      */
-    public function addYamlMapping(string $path)
+    public function addYamlMapping($path)
     {
         if (null !== $this->metadataFactory) {
             throw new ValidatorException('You cannot add custom mappings after setting a custom metadata factory. Configure your metadata factory instead.');
@@ -183,7 +180,7 @@ class ValidatorBuilder
      *
      * @return $this
      */
-    public function addMethodMapping(string $methodName)
+    public function addMethodMapping($methodName)
     {
         if (null !== $this->metadataFactory) {
             throw new ValidatorException('You cannot add custom mappings after setting a custom metadata factory. Configure your metadata factory instead.');
@@ -269,7 +266,7 @@ class ValidatorBuilder
      */
     public function addDefaultDoctrineAnnotationReader(): self
     {
-        $this->annotationReader = $this->createAnnotationReader();
+        $this->annotationReader = new CachedReader(new AnnotationReader(), new ArrayCache());
 
         return $this;
     }
@@ -339,7 +336,7 @@ class ValidatorBuilder
      *
      * @return $this
      */
-    public function setTranslationDomain(?string $translationDomain)
+    public function setTranslationDomain($translationDomain)
     {
         $this->translationDomain = $translationDomain;
 
@@ -404,7 +401,7 @@ class ValidatorBuilder
             $metadataFactory = new LazyLoadingMetadataFactory($loader, $this->mappingCache);
         }
 
-        $validatorFactory = $this->validatorFactory ?? new ConstraintValidatorFactory();
+        $validatorFactory = $this->validatorFactory ?: new ConstraintValidatorFactory();
         $translator = $this->translator;
 
         if (null === $translator) {
@@ -421,24 +418,5 @@ class ValidatorBuilder
         $contextFactory = new ExecutionContextFactory($translator, $this->translationDomain);
 
         return new RecursiveValidator($contextFactory, $metadataFactory, $validatorFactory, $this->initializers);
-    }
-
-    private function createAnnotationReader(): Reader
-    {
-        if (!class_exists(AnnotationReader::class)) {
-            throw new LogicException('Enabling annotation based constraint mapping requires the packages doctrine/annotations and symfony/cache to be installed.');
-        }
-
-        if (class_exists(ArrayAdapter::class)) {
-            return new PsrCachedReader(new AnnotationReader(), new ArrayAdapter());
-        }
-
-        if (class_exists(CachedReader::class) && class_exists(ArrayCache::class)) {
-            trigger_deprecation('symfony/validator', '5.4', 'Enabling annotation based constraint mapping without having symfony/cache installed is deprecated.');
-
-            return new CachedReader(new AnnotationReader(), new ArrayCache());
-        }
-
-        throw new LogicException('Enabling annotation based constraint mapping requires the packages doctrine/annotations and symfony/cache to be installed.');
     }
 }

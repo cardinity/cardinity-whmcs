@@ -1,7 +1,7 @@
 
 Cardinity Client PHP Library
 ================================================
-[![Build Status](https://app.travis-ci.com/cardinity/cardinity-sdk-php.svg?branch=master)](https://app.travis-ci.com/cardinity/cardinity-sdk-php)
+[![Build Status](https://travis-ci.org/cardinity/cardinity-sdk-php.svg?branch=master)](http://travis-ci.org/cardinity/cardinity-sdk-php)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/cardinity/cardinity-sdk-php/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/cardinity/cardinity-sdk-php/?branch=master)
 
 This is official PHP client library for [Cardinity's](https://developers.cardinity.com/api/v1/) API.  
@@ -95,11 +95,7 @@ try {
     } elseif ($status == 'pending') {
         if ($payment->isThreedsV2()) {
             // $auth object for data required to finalize payment
-            $auth = $payment->getThreeds2Data();
-            // finalize process should be done here.
-        }else if ($payment->isThreedsV1()) {
-            // $auth object for data required to finalize payment
-            $auth = $payment->getAuthorizationInformation();
+            $auth = $payment->getThreeds2data();
             // finalize process should be done here.
         }
     }
@@ -136,20 +132,11 @@ $client = Client::create([
     'consumerSecret' => 'YOUR_CONSUMER_SECRET',
 ]);
 
-if($v2){
-    $method = new Payment\Finalize(
-        $payment->getId(), // payment object received from API call
-        $auth->getCreq(), // payment object received from API call
-        true // BOOL `true` to enable 3D secure V2 parameters
-    );
-}elseif($v1){
-    $method = new Payment\Finalize(
-        $payment->getId(), // payment object received from API call
-        $auth->getData(), // payment object received from API call
-        false // BOOL `false` to enable 3D secure V1 parameters
-    );
-}
-
+$method = new Payment\Finalize(
+    $payment->getId(), // payment object received from API call
+    $auth->getCreq(), // payment object received from API call
+    true // BOOL `true` to enable 3D secure V2 parameters
+);
 // again use same try ... catch block
 try {
     $payment = $client->call($method);

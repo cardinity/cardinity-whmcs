@@ -20,7 +20,7 @@ trivial to integrate with web services.
 - Middleware system allows you to augment and compose client behavior.
 
 ```php
-$client = new \GuzzleHttp6\Client();
+$client = new \GuzzleHttp\Client();
 $response = $client->request('GET', 'https://api.github.com/repos/guzzle/guzzle');
 
 echo $response->getStatusCode(); # 200
@@ -28,7 +28,7 @@ echo $response->getHeaderLine('content-type'); # 'application/json; charset=utf8
 echo $response->getBody(); # '{"id": 1420053, "name": "guzzle", ...}'
 
 # Send an asynchronous request.
-$request = new \GuzzleHttp6\Psr7\Request('GET', 'http://httpbin.org');
+$request = new \GuzzleHttp\Psr7\Request('GET', 'http://httpbin.org');
 $promise = $client->sendAsync($request)->then(function ($response) {
     echo 'I completed! ' . $response->getBody();
 });
@@ -77,9 +77,9 @@ composer update
 | Version | Status     | Packagist           | Namespace    | Repo                | Docs                | PSR-7 | PHP Version |
 |---------|------------|---------------------|--------------|---------------------|---------------------|-------|-------------|
 | 3.x     | EOL        | `guzzle/guzzle`     | `Guzzle`     | [v3][guzzle-3-repo] | [v3][guzzle-3-docs] | No    | >= 5.3.3    |
-| 4.x     | EOL        | `guzzlehttp/guzzle` | `GuzzleHttp6` | [v4][guzzle-4-repo] | N/A                 | No    | >= 5.4      |
-| 5.x     | EOL        | `guzzlehttp/guzzle` | `GuzzleHttp6` | [v5][guzzle-5-repo] | [v5][guzzle-5-docs] | No    | >= 5.4      |
-| 6.x     | Latest     | `guzzlehttp/guzzle` | `GuzzleHttp6` | [v6][guzzle-6-repo] | [v6][guzzle-6-docs] | Yes   | >= 5.5      |
+| 4.x     | EOL        | `guzzlehttp/guzzle` | `GuzzleHttp` | [v4][guzzle-4-repo] | N/A                 | No    | >= 5.4      |
+| 5.x     | EOL        | `guzzlehttp/guzzle` | `GuzzleHttp` | [v5][guzzle-5-repo] | [v5][guzzle-5-docs] | No    | >= 5.4      |
+| 6.x     | Latest     | `guzzlehttp/guzzle` | `GuzzleHttp` | [v6][guzzle-6-repo] | [v6][guzzle-6-docs] | Yes   | >= 5.5      |
 
 [guzzle-3-repo]: https://github.com/guzzle/guzzle3
 [guzzle-4-repo]: https://github.com/guzzle/guzzle/tree/4.x

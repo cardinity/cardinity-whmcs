@@ -53,7 +53,7 @@ class DateTimeValidator extends DateValidator
             return;
         }
 
-        if (str_ends_with($constraint->format, '+')) {
+        if ('+' === substr($constraint->format, -1)) {
             $errors['warnings'] = array_filter($errors['warnings'], function ($warning) {
                 return 'Trailing data' !== $warning;
             });

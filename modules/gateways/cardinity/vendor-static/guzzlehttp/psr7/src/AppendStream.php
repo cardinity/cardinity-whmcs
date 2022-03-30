@@ -1,6 +1,6 @@
 <?php
 
-namespace GuzzleHttp6\Psr7;
+namespace GuzzleHttp66\Psr7;
 
 use Psr\Http\Message\StreamInterface;
 

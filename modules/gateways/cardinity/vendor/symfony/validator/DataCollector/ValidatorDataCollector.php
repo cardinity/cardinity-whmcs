@@ -65,12 +65,18 @@ class ValidatorDataCollector extends DataCollector implements LateDataCollectorI
         }, 0);
     }
 
-    public function getCalls(): Data
+    /**
+     * @return Data
+     */
+    public function getCalls()
     {
         return $this->data['calls'];
     }
 
-    public function getViolationsCount(): int
+    /**
+     * @return int
+     */
+    public function getViolationsCount()
     {
         return $this->data['violations_count'];
     }
@@ -78,12 +84,12 @@ class ValidatorDataCollector extends DataCollector implements LateDataCollectorI
     /**
      * {@inheritdoc}
      */
-    public function getName(): string
+    public function getName()
     {
         return 'validator';
     }
 
-    protected function getCasters(): array
+    protected function getCasters()
     {
         return parent::getCasters() + [
             \Exception::class => function (\Exception $e, array $a, Stub $s) {

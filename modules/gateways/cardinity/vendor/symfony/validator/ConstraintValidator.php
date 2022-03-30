@@ -24,12 +24,12 @@ abstract class ConstraintValidator implements ConstraintValidatorInterface
      * Whether to format {@link \DateTime} objects, either with the {@link \IntlDateFormatter}
      * (if it is available) or as RFC-3339 dates ("Y-m-d H:i:s").
      */
-    public const PRETTY_DATE = 1;
+    const PRETTY_DATE = 1;
 
     /**
      * Whether to cast objects with a "__toString()" method to strings.
      */
-    public const OBJECT_TO_STRING = 2;
+    const OBJECT_TO_STRING = 2;
 
     /**
      * @var ExecutionContextInterface
@@ -54,7 +54,7 @@ abstract class ConstraintValidator implements ConstraintValidatorInterface
      *
      * @param mixed $value The value to return the type of
      *
-     * @return string
+     * @return string The type of the value
      */
     protected function formatTypeOf($value)
     {
@@ -82,12 +82,12 @@ abstract class ConstraintValidator implements ConstraintValidatorInterface
      * @param int   $format A bitwise combination of the format
      *                      constants in this class
      *
-     * @return string
+     * @return string The string representation of the passed value
      */
     protected function formatValue($value, int $format = 0)
     {
         if (($format & self::PRETTY_DATE) && $value instanceof \DateTimeInterface) {
-            if (class_exists(\IntlDateFormatter::class)) {
+            if (class_exists('IntlDateFormatter')) {
                 $formatter = new \IntlDateFormatter(\Locale::getDefault(), \IntlDateFormatter::MEDIUM, \IntlDateFormatter::SHORT, 'UTC');
 
                 return $formatter->format(new \DateTime(
@@ -144,7 +144,7 @@ abstract class ConstraintValidator implements ConstraintValidatorInterface
      * @param int   $format A bitwise combination of the format
      *                      constants in this class
      *
-     * @return string
+     * @return string The string representation of the value list
      *
      * @see formatValue()
      */

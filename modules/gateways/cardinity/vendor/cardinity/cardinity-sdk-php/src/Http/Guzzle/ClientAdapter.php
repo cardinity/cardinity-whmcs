@@ -5,26 +5,26 @@ use Cardinity\Exception;
 use Cardinity\Http\ClientInterface;
 use Cardinity\Http\Guzzle\ExceptionMapper;
 use Cardinity\Method\MethodInterface;
-use GuzzleHttp;
-use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp6;
+use GuzzleHttp6\Exception\ClientException;
 
 /**
- * Adapter for GuzzleHttp client
+ * Adapter for GuzzleHttp6 client
  */
 class ClientAdapter implements ClientInterface
 {
-    /** @type GuzzleHttp\ClientInterface */
+    /** @type GuzzleHttp6\ClientInterface */
     private $client;
 
     /** @type ExceptionMapper */
     private $mapper;
 
     /**
-     * @param GuzzleHttp\ClientInterface $client
+     * @param GuzzleHttp6\ClientInterface $client
      * @param ExceptionMapper $mapper
      */
     public function __construct(
-        GuzzleHttp\ClientInterface $client,
+        GuzzleHttp6\ClientInterface $client,
         ExceptionMapper $mapper
     ) {
         $this->client = $client;

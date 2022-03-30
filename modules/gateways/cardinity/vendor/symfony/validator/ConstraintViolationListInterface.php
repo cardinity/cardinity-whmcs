@@ -15,9 +15,6 @@ namespace Symfony\Component\Validator;
  * A list of constraint violations.
  *
  * @author Bernhard Schussek <bschussek@gmail.com>
- *
- * @extends \ArrayAccess<int, ConstraintViolationInterface>
- * @extends \Traversable<int, ConstraintViolationInterface>
  */
 interface ConstraintViolationListInterface extends \Traversable, \Countable, \ArrayAccess
 {
@@ -36,7 +33,7 @@ interface ConstraintViolationListInterface extends \Traversable, \Countable, \Ar
      *
      * @param int $offset The offset of the violation
      *
-     * @return ConstraintViolationInterface
+     * @return ConstraintViolationInterface The violation
      *
      * @throws \OutOfBoundsException if the offset does not exist
      */
@@ -47,7 +44,7 @@ interface ConstraintViolationListInterface extends \Traversable, \Countable, \Ar
      *
      * @param int $offset The violation offset
      *
-     * @return bool
+     * @return bool Whether the offset exists
      */
     public function has(int $offset);
 

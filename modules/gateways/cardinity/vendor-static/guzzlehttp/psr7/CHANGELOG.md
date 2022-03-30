@@ -196,7 +196,7 @@ Several other fixes and improvements.
 
 ### Fixed
 
-- Support in `GuzzleHttp6\Psr7\CachingStream` for seeking forward on remote
+- Support in `GuzzleHttp\Psr7\CachingStream` for seeking forward on remote
   streams, which can sometimes return fewer bytes than requested with `fread`.
 - Handling of gzipped responses with FNAME headers.
 

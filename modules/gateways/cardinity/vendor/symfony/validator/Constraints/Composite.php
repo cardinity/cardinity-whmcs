@@ -51,9 +51,9 @@ abstract class Composite extends Constraint
      * cached. When constraints are loaded from the cache, no more group
      * checks need to be done.
      */
-    public function __construct($options = null, array $groups = null, $payload = null)
+    public function __construct($options = null)
     {
-        parent::__construct($options, $groups, $payload);
+        parent::__construct($options);
 
         $this->initializeNestedConstraints();
 
@@ -79,7 +79,7 @@ abstract class Composite extends Constraint
             }
         }
 
-        if (!isset(((array) $this)['groups'])) {
+        if (!property_exists($this, 'groups')) {
             $mergedGroups = [];
 
             foreach ($nestedConstraints as $constraint) {
@@ -96,7 +96,7 @@ abstract class Composite extends Constraint
         }
 
         foreach ($nestedConstraints as $constraint) {
-            if (isset(((array) $constraint)['groups'])) {
+            if (property_exists($constraint, 'groups')) {
                 $excessGroups = array_diff($constraint->groups, $this->groups);
 
                 if (\count($excessGroups) > 0) {
@@ -114,8 +114,10 @@ abstract class Composite extends Constraint
      * {@inheritdoc}
      *
      * Implicit group names are forwarded to nested constraints.
+     *
+     * @param string $group
      */
-    public function addImplicitGroupName(string $group)
+    public function addImplicitGroupName($group)
     {
         parent::addImplicitGroupName($group);
 
@@ -130,7 +132,7 @@ abstract class Composite extends Constraint
     /**
      * Returns the name of the property that contains the nested constraints.
      *
-     * @return string
+     * @return string The property name
      */
     abstract protected function getCompositeOption();
 
@@ -139,7 +141,7 @@ abstract class Composite extends Constraint
      *
      * @return Constraint[]
      */
-    public function getNestedConstraints()
+    public function getNestedContraints()
     {
         /* @var Constraint[] $nestedConstraints */
         return $this->{$this->getCompositeOption()};

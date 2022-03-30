@@ -158,7 +158,7 @@ abstract class MemberMetadata extends GenericMetadata implements PropertyMetadat
      *
      * @param object|string $objectOrClassName The object or the class name
      *
-     * @return \ReflectionMethod|\ReflectionProperty
+     * @return \ReflectionMethod|\ReflectionProperty The reflection instance
      */
     public function getReflectionMember($objectOrClassName)
     {
@@ -173,9 +173,11 @@ abstract class MemberMetadata extends GenericMetadata implements PropertyMetadat
     /**
      * Creates a new reflection instance for accessing the member's value.
      *
+     * Must be implemented by subclasses.
+     *
      * @param object|string $objectOrClassName The object or the class name
      *
-     * @return \ReflectionMethod|\ReflectionProperty
+     * @return \ReflectionMethod|\ReflectionProperty The reflection instance
      */
     abstract protected function newReflectionMember($objectOrClassName);
 
@@ -186,8 +188,8 @@ abstract class MemberMetadata extends GenericMetadata implements PropertyMetadat
         }
 
         if ($constraint instanceof Composite) {
-            foreach ($constraint->getNestedConstraints() as $nestedConstraint) {
-                $this->checkConstraint($nestedConstraint);
+            foreach ($constraint->getNestedContraints() as $nestedContraint) {
+                $this->checkConstraint($nestedContraint);
             }
         }
     }

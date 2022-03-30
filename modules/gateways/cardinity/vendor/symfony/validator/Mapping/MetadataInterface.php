@@ -33,7 +33,7 @@ interface MetadataInterface
     /**
      * Returns the strategy for cascading objects.
      *
-     * @return int
+     * @return int The cascading strategy
      *
      * @see CascadingStrategy
      */
@@ -42,7 +42,7 @@ interface MetadataInterface
     /**
      * Returns the strategy for traversing traversable objects.
      *
-     * @return int
+     * @return int The traversal strategy
      *
      * @see TraversalStrategy
      */
@@ -51,7 +51,7 @@ interface MetadataInterface
     /**
      * Returns all constraints of this element.
      *
-     * @return Constraint[]
+     * @return Constraint[] A list of Constraint instances
      */
     public function getConstraints();
 
@@ -60,7 +60,7 @@ interface MetadataInterface
      *
      * @param string $group The validation group
      *
-     * @return Constraint[]
+     * @return Constraint[] A list of constraint instances
      */
     public function findConstraints(string $group);
 }

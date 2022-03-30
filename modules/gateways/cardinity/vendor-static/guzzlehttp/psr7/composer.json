@@ -32,13 +32,13 @@
     },
     "autoload": {
         "psr-4": {
-            "GuzzleHttp6\\Psr7\\": "src/"
+            "GuzzleHttp\\Psr7\\": "src/"
         },
         "files": ["src/functions_include.php"]
     },
     "autoload-dev": {
         "psr-4": {
-            "GuzzleHttp6\\Tests\\Psr7\\": "tests/"
+            "GuzzleHttp\\Tests\\Psr7\\": "tests/"
         }
     },
     "extra": {

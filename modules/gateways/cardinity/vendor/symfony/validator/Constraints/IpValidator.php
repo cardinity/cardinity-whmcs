@@ -93,7 +93,7 @@ class IpValidator extends ConstraintValidator
                break;
 
             default:
-                $flag = 0;
+                $flag = null;
                 break;
         }
 
