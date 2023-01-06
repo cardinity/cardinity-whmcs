@@ -34,7 +34,7 @@ class DateTimeValidator extends DateValidator
             return;
         }
 
-        if (!is_scalar($value) && !(\is_object($value) && method_exists($value, '__toString'))) {
+        if (!\is_scalar($value) && !(\is_object($value) && method_exists($value, '__toString'))) {
             throw new UnexpectedValueException($value, 'string');
         }
 
@@ -42,7 +42,7 @@ class DateTimeValidator extends DateValidator
 
         \DateTime::createFromFormat($constraint->format, $value);
 
-        $errors = \DateTime::getLastErrors();
+        $errors = \DateTime::getLastErrors() ?: ['error_count' => 0, 'warnings' => []];
 
         if (0 < $errors['error_count']) {
             $this->context->buildViolation($constraint->message)
@@ -53,7 +53,7 @@ class DateTimeValidator extends DateValidator
             return;
         }
 
-        if ('+' === substr($constraint->format, -1)) {
+        if (str_ends_with($constraint->format, '+')) {
             $errors['warnings'] = array_filter($errors['warnings'], function ($warning) {
                 return 'Trailing data' !== $warning;
             });

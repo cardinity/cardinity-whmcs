@@ -24,6 +24,13 @@ class Valid extends Constraint
 {
     public $traverse = true;
 
+    public function __construct(array $options = null, array $groups = null, $payload = null, bool $traverse = null)
+    {
+        parent::__construct($options ?? [], $groups, $payload);
+
+        $this->traverse = $traverse ?? $this->traverse;
+    }
+
     public function __get(string $option)
     {
         if ('groups' === $option) {
@@ -37,7 +44,7 @@ class Valid extends Constraint
     /**
      * {@inheritdoc}
      */
-    public function addImplicitGroupName($group)
+    public function addImplicitGroupName(string $group)
     {
         if (null !== $this->groups) {
             parent::addImplicitGroupName($group);

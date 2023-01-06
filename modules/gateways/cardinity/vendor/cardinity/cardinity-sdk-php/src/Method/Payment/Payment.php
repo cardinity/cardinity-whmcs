@@ -72,7 +72,7 @@ class Payment extends ResultObject
      */
     private $paymentInstrument;
 
-    /** @deprecated 
+    /** @deprecated
      * @type string Used to provide additional information (PATCH verb) once
         customer completes authorization process. */
     private $authorizeData;
@@ -81,9 +81,13 @@ class Payment extends ResultObject
         payment authorization is needed (i.e. payment status is pending).
         Value assigned by Cardinity. */
     private $authorizationInformation;
-    
+
     /** @type ThreeDS2AuthorizationInformation */
     private $threeDS2AuthorizationInformation;
+
+    /** @type string a descriptor to include in statement provided by a merchant. limit will vary based on merchant name
+        Maximum length 25 characters. */
+    private $statementDescriptorSuffix;
 
     /**
      * Gets the value of id.
@@ -394,7 +398,7 @@ class Payment extends ResultObject
     /**
      * @return ThreeDS2AuthorizationInformation
      */
-    public function getThreeds2data()
+    public function getThreeds2Data()
     {
         return $this->threeDS2AuthorizationInformation;
     }
@@ -403,11 +407,31 @@ class Payment extends ResultObject
      * @param ThreeDS2AuthorizationInformation
      * @return VOID
      */
-    public function setThreeds2data(
+    public function setThreeds2Data(
         ThreeDS2AuthorizationInformation $threeDS2AuthorizationInformation
     ){
         $this->threeDS2AuthorizationInformation = $threeDS2AuthorizationInformation;
     }
+
+     /**
+     * Gets the value of statementDescriptorSuffix.
+     * @return mixed
+     */
+    public function getStatementDescriptorSuffix()
+    {
+        return $this->statementDescriptorSuffix;
+    }
+
+    /**
+     * Sets the value of statementDescriptorSuffix.
+     * @param mixed $statementDescriptorSuffix the description included in statement
+     * @return void
+     */
+    public function setStatementDescriptorSuffix($statementDescriptorSuffix)
+    {
+        $this->statementDescriptorSuffix = $statementDescriptorSuffix;
+    }
+
 
     /**
      * @return BOOL is it 3D secure v1?
