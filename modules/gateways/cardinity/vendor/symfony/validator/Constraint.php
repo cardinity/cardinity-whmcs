@@ -25,8 +25,6 @@ use Symfony\Component\Validator\Exception\MissingOptionsException;
  *
  * Constraint instances are immutable and serializable.
  *
- * @property array $groups The groups that the constraint belongs to
- *
  * @author Bernhard Schussek <bschussek@gmail.com>
  */
 abstract class Constraint
@@ -34,17 +32,17 @@ abstract class Constraint
     /**
      * The name of the group given to all constraints with no explicit group.
      */
-    const DEFAULT_GROUP = 'Default';
+    public const DEFAULT_GROUP = 'Default';
 
     /**
      * Marks a constraint that can be put onto classes.
      */
-    const CLASS_CONSTRAINT = 'class';
+    public const CLASS_CONSTRAINT = 'class';
 
     /**
      * Marks a constraint that can be put onto properties.
      */
-    const PROPERTY_CONSTRAINT = 'property';
+    public const PROPERTY_CONSTRAINT = 'property';
 
     /**
      * Maps error codes to the names of their constants.
@@ -59,15 +57,20 @@ abstract class Constraint
     public $payload;
 
     /**
+     * The groups that the constraint belongs to.
+     *
+     * @var string[]
+     */
+    public $groups;
+
+    /**
      * Returns the name of the given error code.
      *
-     * @param string $errorCode The error code
-     *
-     * @return string The name of the error code
+     * @return string
      *
      * @throws InvalidArgumentException If the error code does not exist
      */
-    public static function getErrorName($errorCode)
+    public static function getErrorName(string $errorCode)
     {
         if (!isset(static::$errorNames[$errorCode])) {
             throw new InvalidArgumentException(sprintf('The error code "%s" does not exist for constraint of type "%s".', $errorCode, static::class));
@@ -107,6 +110,8 @@ abstract class Constraint
      */
     public function __construct($options = null, array $groups = null, $payload = null)
     {
+        unset($this->groups); // enable lazy initialization
+
         $options = $this->normalizeOptions($options);
         if (null !== $groups) {
             $options['groups'] = $groups;
@@ -125,9 +130,6 @@ abstract class Constraint
         $invalidOptions = [];
         $missingOptions = array_flip((array) $this->getRequiredOptions());
         $knownOptions = get_class_vars(static::class);
-
-        // The "groups" option is added to the object lazily
-        $knownOptions['groups'] = true;
 
         if (\is_array($options) && isset($options['value']) && !property_exists($this, 'value')) {
             if (null === $defaultOption) {
@@ -203,13 +205,9 @@ abstract class Constraint
      * this method will be called at most once per constraint instance and
      * option name.
      *
-     * @param string $option The option name
-     *
-     * @return mixed The value of the option
+     * @return mixed
      *
      * @throws InvalidOptionsException If an invalid option name is given
-     *
-     * @internal this method should not be used or overwritten in userland code
      */
     public function __get(string $option)
     {
@@ -223,8 +221,6 @@ abstract class Constraint
     }
 
     /**
-     * @param string $option The option name
-     *
      * @return bool
      */
     public function __isset(string $option)
@@ -234,11 +230,13 @@ abstract class Constraint
 
     /**
      * Adds the given group if this constraint is in the Default group.
-     *
-     * @param string $group
      */
-    public function addImplicitGroupName($group)
+    public function addImplicitGroupName(string $group)
     {
+        if (null === $this->groups && \array_key_exists('groups', (array) $this)) {
+            throw new \LogicException(sprintf('"%s::$groups" is set to null. Did you forget to call "%s::__construct()"?', static::class, self::class));
+        }
+
         if (\in_array(self::DEFAULT_GROUP, $this->groups) && !\in_array($group, $this->groups)) {
             $this->groups[] = $group;
         }
@@ -263,7 +261,7 @@ abstract class Constraint
      *
      * Override this method if you want to define required options.
      *
-     * @return array
+     * @return string[]
      *
      * @see __construct()
      */
@@ -293,7 +291,7 @@ abstract class Constraint
      * This method should return one or more of the constants
      * Constraint::CLASS_CONSTRAINT and Constraint::PROPERTY_CONSTRAINT.
      *
-     * @return string|array One or more constant values
+     * @return string|string[] One or more constant values
      */
     public function getTargets()
     {
@@ -305,7 +303,7 @@ abstract class Constraint
      *
      * @internal
      */
-    public function __sleep()
+    public function __sleep(): array
     {
         // Initialize "groups" option if it is not set
         $this->groups;
