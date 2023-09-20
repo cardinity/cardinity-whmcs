@@ -32,6 +32,10 @@ $httponly = true;
 $secure = false;
 $samesite = 'None';
 
+if($domain == 'localhost'){
+    $domain = false;
+}
+
 
 if (PHP_VERSION_ID < 70300) {
     setcookie(
