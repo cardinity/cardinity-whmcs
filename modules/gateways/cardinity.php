@@ -50,7 +50,7 @@ function cardinity_config()
             'Type' => 'System',
             'Value' => 'Cardinity',
         ),
-   
+
         'liveConsumerKey' => array(
             'FriendlyName' => 'Live Consumer Key',
             'Type' => 'text',
@@ -67,7 +67,7 @@ function cardinity_config()
             'Description' => 'Enter live consumer secret here',
         ),
 
-        
+
         'gatewayMode' => array(
             'FriendlyName' => 'Gateway Mode',
             'Type' => 'radio',
@@ -142,11 +142,13 @@ function processInternalPayment($params){
 
     $userAgent = explode("; ", $_SERVER['HTTP_USER_AGENT']);
 
+
+
     //Capture function does not guarantee entered CVV. In case it is not entered, use recurring payment terminal
     if (empty($params['cccvv'])) {
         $paymentMethod = Payment\Create::RECURRING;
         $paymentInstrument = [
-            'payment_id' => $params['gatewayid'],
+            'payment_id' => getCustomerLastPaymentToken($params['invoiceid']),
         ];
     } else {
         //Concatenate card holders first and last name
@@ -187,26 +189,26 @@ function processInternalPayment($params){
         }else{
             $browserInfoCookie = array();
         }
-       
+
         /*
         * The actual credit card info form is handled by whmcs and is encoded
-        * Unable to get the brower info variables from there.  
+        * Unable to get the brower info variables from there.
         */
         $threeds2_data = [
-            "notification_url" => $params['systemurl'] . 'modules/gateways/callback/cardinity.php', 
+            "notification_url" => $params['systemurl'] . 'modules/gateways/callback/cardinity.php',
             "browser_info" => [
                 "accept_header" => "text/html",
                 "browser_language" => $browserInfoCookie['browser_language'] ?? 'en-US',
                 "screen_width" => (int) $browserInfoCookie['screen_width'] ?? 1920,
                 "screen_height" => (int) $browserInfoCookie['screen_height'] ?? 1040,
-                'challenge_window_size' => $browserInfoCookie['challenge_window_size'] ?? "full-screen", 
+                'challenge_window_size' => $browserInfoCookie['challenge_window_size'] ?? "full-screen",
                 "user_agent" => $_SERVER['HTTP_USER_AGENT'],
                 "color_depth" => (int) $browserInfoCookie['color_depth'] ?? 24,
                 "time_zone" => (int) $browserInfoCookie['time_zone'] ?? -60
             ],
         ];
 
-    
+
     }
 
     //prepare parameters
@@ -268,7 +270,7 @@ function processInternalPayment($params){
                     <div style="text-align: center; width: 300px; position: fixed; top: 30%; left: 50%; margin-top: -50px; margin-left: -150px;">
                         <h2>You will be redirected for 3D secure verification shortly. </h2>
                         <p>If browser does not redirect after 5 seconds, press Submit</p>
-                        <form id="3dsecureform" method="post" action="' . $acs_url . '">                   
+                        <form id="3dsecureform" method="post" action="' . $acs_url . '">
                             <button type=submit>Click Here</button>
                             <input type="hidden" name="creq" value="' . $creq . '" />
                             <input type="hidden" name="threeDSSessionData" value="' . $threeDSSessionData . '"/>
@@ -304,82 +306,14 @@ function processInternalPayment($params){
             //we dont want to do anything else. just show html form and redirect
             exit();
         }
-     
-        
-       
-    } else { 
+
+
+
+    } else {
         //Should never happen
         return createWhmcsReturnArray('error', $result, $result->getId());
     }
 }
-
-//rename this to cardinity_link to use external payment
-/*function processExternalPayment($params){
-       
-    //Create Cardinity client
-    $client = createCardinityClient($params);
-    //Cardinity API accepts order id with minimum length of 2.
-    $orderId = str_pad($params['invoiceid'], 2, '0', STR_PAD_LEFT);
-
-    //Cardinity API accepts payment amount as float value to 2 decimal places
-    $amount = number_format((float)$params['amount'], 2, '.', '') ;
-
-    $cancelUrl = $params['systemurl'] . 'modules/gateways/callback/cardinity.php';
-    $returnUrl = $params['systemurl'] . 'modules/gateways/callback/cardinity.php';
-
-
-    $attributes = [
-        "amount" => $amount,
-        "currency" => $params['currency'],
-        "country" => $params['clientdetails']['countrycode'],
-        "order_id" => $orderId,
-        "description" => "$params[invoiceid]",
-        "project_id" => $params['projectId'],
-        "cancel_url" => $cancelUrl,
-        "return_url" => $returnUrl,
-    ];
-
-    ksort($attributes);
-
-    $message = '';
-    foreach($attributes as $key => $value) {
-        $message .= $key.$value;
-    }
-
-    $signature = hash_hmac('sha256', $message, $params['projectSecret']);
-
-    
-    //Build the external request form
-    $requestForm = '<html>
-        <head>
-            <title>Request Example | Hosted Payment Page</title>
-            <script type="text/javascript">setTimeout(function() { document.getElementById("externalPaymentForm").submit(); }, 5000);</script>
-        </head>
-        <body>
-            <div style="text-align: center; width: 300px; position: fixed; top: 30%; left: 50%; margin-top: -50px; margin-left: -150px;">
-                <h2>You will be redirected to external gateway shortly. </h2>
-                <p>If browser does not redirect after 5 seconds, press Submit</p>
-                <form id="externalPaymentForm" name="checkout" method="POST" action="https://checkout.cardinity.com">                    
-                    <button type=submit>Click Here</button>
-                    <input type="hidden" name="amount" value="' . $attributes['amount'] . '" />
-                    <input type="hidden" name="cancel_url" value="' . $attributes['cancel_url'] . '" />
-                    <input type="hidden" name="country" value="' . $attributes['country'] . '" />
-                    <input type="hidden" name="currency" value="' . $attributes['currency'] . '" />
-                    <input type="hidden" name="description" value="' . $attributes['description'] . '" />
-                    <input type="hidden" name="order_id" value="' . $attributes['order_id'] . '" />
-                    <input type="hidden" name="project_id" value="' . $attributes['project_id'] . '" />
-                    <input type="hidden" name="return_url" value="' . $attributes['return_url'] . '" />
-                    <input type="hidden" name="signature" value="' . $signature . '" />
-                </form>
-            </div>
-        </body>
-        </html>';
-
-    echo $requestForm;
-    //we dont want to do anything else. just show html form and redirect
-    exit();
-}
-*/
 
 
 /***
@@ -430,7 +364,7 @@ function createWhmcsReturnArray($status, $rawData, $transactionId = '')
     return array(
         'status' => $status,
         'rawdata' => $rawData,
-        'transid' => $transactionId,
+        'transid' => $transactionId
     );
 }
 
@@ -450,9 +384,33 @@ function addRemoteToken($invoiceId, $remoteTokenID)
     Capsule::table('tblclients')
         ->where('id', $user->userid)
         ->update([
-            "gatewayid" => $remoteTokenID
+           "gatewayid" => $remoteTokenID
         ]);
 }
 
+/**
+ * Find customers gateway token from invoice
+ *
+ * @param [type] $invoiceId
+ * @return string Cardinity payment ID, used as a token for recurring transactions
+ */
+function getCustomerLastPaymentToken($invoiceId)
+{
 
-  
+    $invoice = Capsule::table('tblinvoiceitems')->select('userid')
+        ->where('invoiceid', $invoiceId)
+        ->first();
+
+    $account = Capsule::table('tblaccounts')
+        ->select('transid')
+        ->where('userid',$invoice->userid)
+        ->where('gateway','cardinity')
+        ->latest('id')
+        ->first();
+
+    return $account->transid;
+}
+
+
+
+
