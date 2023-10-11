@@ -148,7 +148,7 @@ function processInternalPayment($params){
     if (empty($params['cccvv'])) {
         $paymentMethod = Payment\Create::RECURRING;
         $paymentInstrument = [
-            'payment_id' => getCustomerGatewayId($params['invoiceid']),
+            'payment_id' => getCustomerLastPaymentToken($params['invoiceid']),
         ];
     } else {
         //Concatenate card holders first and last name
@@ -377,17 +377,15 @@ function createWhmcsReturnArray($status, $rawData, $transactionId = '')
  */
 function addRemoteToken($invoiceId, $remoteTokenID)
 {
-    if($remoteTokenID){
-        $user = Capsule::table('tblinvoiceitems')->select('userid')
+    $user = Capsule::table('tblinvoiceitems')->select('userid')
         ->where('invoiceid', $invoiceId)
         ->first();
 
-        Capsule::table('tblclients')
-            ->where('id', $user->userid)
-            ->update([
-                "gatewayid" => $remoteTokenID
-            ]);
-    }
+    Capsule::table('tblclients')
+        ->where('id', $user->userid)
+        ->update([
+           "gatewayid" => $remoteTokenID
+        ]);
 }
 
 /**
@@ -396,21 +394,21 @@ function addRemoteToken($invoiceId, $remoteTokenID)
  * @param [type] $invoiceId
  * @return string Cardinity payment ID, used as a token for recurring transactions
  */
-function getCustomerGatewayId($invoiceId)
+function getCustomerLastPaymentToken($invoiceId)
 {
 
-    $lastPaidInvoice = Capsule::table('tblinvoiceitems')->select('userid')
+    $invoice = Capsule::table('tblinvoiceitems')->select('userid')
         ->where('invoiceid', $invoiceId)
         ->first();
 
-    $client = Capsule::table('tblaccounts')
+    $account = Capsule::table('tblaccounts')
         ->select('transid')
-        ->where('userid',$lastPaidInvoice->userid)
+        ->where('userid',$invoice->userid)
         ->where('gateway','cardinity')
         ->latest('id')
         ->first();
 
-    return $client->transid;
+    return $account->transid;
 }
 
 
