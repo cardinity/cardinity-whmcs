@@ -82,6 +82,7 @@ function processExternalPayment($params){
         "order_id" => $orderId,
         "description" => "$params[invoiceid]",
         "project_id" => $params['projectId'],
+        'email_address' => $params['clientdetails']['email'],
         "cancel_url" => $cancelUrl,
         "return_url" => $returnUrl,
     ];
@@ -97,30 +98,6 @@ function processExternalPayment($params){
 
 
     //Build the external request form
-    $requestForm = '<html>
-        <head>
-            <title>Request Example | Hosted Payment Page</title>
-            <script type="text/javascript">setTimeout(function() { document.getElementById("externalPaymentForm").submit(); }, 5000);</script>
-        </head>
-        <body>
-            <div style="text-align: center; width: 300px; position: fixed; top: 30%; left: 50%; margin-top: -50px; margin-left: -150px;">
-                <h2>You will be redirected to external gateway shortly. </h2>
-                <p>If browser does not redirect after 5 seconds, press Submit</p>
-                <form id="externalPaymentForm" name="checkout" method="POST" action="https://checkout.cardinity.com">
-                    <button type=submit>Click Here</button>
-                    <input type="hidden" name="amount" value="' . $attributes['amount'] . '" />
-                    <input type="hidden" name="cancel_url" value="' . $attributes['cancel_url'] . '" />
-                    <input type="hidden" name="country" value="' . $attributes['country'] . '" />
-                    <input type="hidden" name="currency" value="' . $attributes['currency'] . '" />
-                    <input type="hidden" name="description" value="' . $attributes['description'] . '" />
-                    <input type="hidden" name="order_id" value="' . $attributes['order_id'] . '" />
-                    <input type="hidden" name="project_id" value="' . $attributes['project_id'] . '" />
-                    <input type="hidden" name="return_url" value="' . $attributes['return_url'] . '" />
-                    <input type="hidden" name="signature" value="' . $signature . '" />
-                </form>
-            </div>
-        </body>
-        </html>';
 
         $requestForm2 = '
                     <form id="externalPaymentForm" name="checkout" method="POST" action="https://checkout.cardinity.com">
@@ -130,6 +107,7 @@ function processExternalPayment($params){
                         <input type="hidden" name="country" value="' . $attributes['country'] . '" />
                         <input type="hidden" name="currency" value="' . $attributes['currency'] . '" />
                         <input type="hidden" name="description" value="' . $attributes['description'] . '" />
+                        <input type="hidden" name="email_address" value="' . $attributes['email_address'] . '" />
                         <input type="hidden" name="order_id" value="' . $attributes['order_id'] . '" />
                         <input type="hidden" name="project_id" value="' . $attributes['project_id'] . '" />
                         <input type="hidden" name="return_url" value="' . $attributes['return_url'] . '" />
