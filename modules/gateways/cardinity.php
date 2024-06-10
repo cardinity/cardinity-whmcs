@@ -192,7 +192,7 @@ function processInternalPayment($params){
 
         /*
         * The actual credit card info form is handled by whmcs and is encoded
-        * Unable to get the brower info variables from there.
+        * Unable to get the browser info variables from there.
         */
         $threeds2_data = [
             "notification_url" => $params['systemurl'] . 'modules/gateways/callback/cardinity.php',
@@ -206,6 +206,9 @@ function processInternalPayment($params){
                 "color_depth" => (int) $browserInfoCookie['color_depth'] ?? 24,
                 "time_zone" => (int) $browserInfoCookie['time_zone'] ?? -60
             ],
+            'cardholder_info' => [
+                'email_address' => $params['clientdetails']['email']
+            ]
         ];
 
 
